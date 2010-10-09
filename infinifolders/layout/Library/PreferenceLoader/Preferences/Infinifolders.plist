@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>Infinifolders</string>
+	<key>entry</key>
+	<dict>
+		<key>cell</key>
+		<string>PSLinkCell</string>
+		<key>icon</key>
+		<string>Infinifolders.png</string>
+		<key>label</key>
+		<string>Infinifolders</string>
+	</dict>
+	<key>items</key>
+	<array>
+		<!-- Disabled because for most users this is useless! -->
+		<!--<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Max Icons</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>min</key>
+			<integer>1</integer>
+			<key>max</key>
+			<integer>200</integer>
+			<key>showValue</key>
+			<true/>
+			<key>key</key>
+			<string>MaxIcons</string>
+			<key>defaults</key>
+			<string>com.chpwn.infinifolders</string>
+			<key>PostNotification</key>
+			<string>com.chpwn.infinifolders.prefs</string>
+		</dict>-->
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Settings</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>key</key>
+			<string>ScrollEnabled</string>
+			<key>label</key>
+			<string>Vertical Scrolling</string>
+			<key>PostNotification</key>
+			<string>com.chpwn.infinifolders.prefs</string>
+			<key>defaults</key>
+			<string>com.chpwn.infinifolders</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<integer>1</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>ScrollBounce</string>
+			<key>label</key>
+			<string>Scrolling Bounce</string>
+			<key>validTitles</key>
+			<array>
+				<string>Enabled</string>
+				<string>Enabled with Extra Icons</string>
+				<string>Disabled</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			<key>defaults</key>
+			<string>com.chpwn.infinifolders</string>
+			<key>PostNotification</key>
+			<string>com.chpwn.infinifolders.prefs</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>ScrollbarStyle</string>
+			<key>label</key>
+			<string>Scrollbar Style</string>
+			<key>validTitles</key>
+			<array>
+				<string>Black</string>
+				<string>White</string>
+				<string>Disabled</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			<key>defaults</key>
+			<string>com.chpwn.infinifolders</string>
+			<key>PostNotification</key>
+			<string>com.chpwn.infinifolders.prefs</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>key</key>
+			<string>PagingEnabled</string>
+			<key>label</key>
+			<string>Vertical Paging</string>
+			<key>PostNotification</key>
+			<string>com.chpwn.infinifolders.prefs</string>
+			<key>defaults</key>
+			<string>com.chpwn.infinifolders</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>isStaticText</key>
+			<true/>
+		</dict>
+		
+		<!-- Begin static text. -->
+		<dict>
+	      <key>cell</key>
+	      <string>PSGroupCell</string>
+	      <key>footerText</key>
+	      <string>Infinifolders © 2010 Grant Paul.</string>
+	    </dict>
+	    <dict>
+	      <key>cell</key>
+	      <string>PSGroupCell</string>
+	      <key>isStaticText</key>
+	      <string>true</string>
+	      <key>requiredCapabilities</key>
+	      <array>
+	        <dict>
+	          <key>wildcat</key>
+	          <false/>
+	          <key>voip</key>
+	          <false/>
+	        </dict>
+	      </array>
+	    </dict>
+	    <dict>
+	      <key>cell</key>
+	      <string>PSTitleValueCell</string>
+	      <key>label</key>
+	      <string>Infinifolders © 2010 Grant Paul.</string>
+	      <key>requiredCapabilities</key>
+	      <array>
+	        <dict>
+	          <key>wildcat</key>
+	          <false/>
+	          <key>voip</key>
+	          <false/>
+	        </dict>
+	      </array>
+	    </dict>
+		<!-- End static text. -->
+
+	</array>
+</dict>
+</plist>
