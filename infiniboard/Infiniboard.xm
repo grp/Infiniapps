@@ -16,7 +16,7 @@
 
 #import <substrate.h>
 
-#import "Infinishared/Infinishared.h"
+#import "infinishared/Infinishared.h"
 
 
 #define idForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
@@ -134,7 +134,6 @@ static NSString *IBFirmwareVersion() {
 static NSMutableArray *listies = nil;
 static NSMutableArray *scrollies = nil;
 static NSDictionary *prefsDict = nil;
-static NSMutableDictionary *cache = nil;
 static Class iconListClass;
 
 static int disableRowsFlag = 0;
@@ -425,11 +424,12 @@ static void fixDockOrdering() {
 - (void)_didRemoveSubview:(id)subview {
 	%orig;
 	
-	fixListHeights();
+	if (VALID_LIST(self)) fixListHeights();
 }
 - (void)setOrientation:(int)orientation {
 	%orig;
-	[[$SBIconController sharedInstance] infiniboardUpdateListHeights];
+
+	if (VALID_LIST(self)) [[$SBIconController sharedInstance] infiniboardUpdateListHeights];
 }
 - (void)removeAllIcons {
 	%orig;
@@ -442,7 +442,7 @@ static void fixDockOrdering() {
 	}
 }
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
-    if (cache_ready(self)) return cache_point(self, x, y);
+	if (cache_ready(self)) return cache_point(self, x, y);
     
 	if (VALID_LIST(self) && !disableOriginFlag) {
 		disableRowsFlag += 1;
@@ -483,7 +483,7 @@ static void fixDockOrdering() {
 	return 50;
 }
 + (int)iconRowsForInterfaceOrientation:(int)interfaceOrientation {
-	if (disableRowsFlag)
+	if (disableRowsFlag || self != iconListClass)
 		return %orig;
 
 	return 50;
