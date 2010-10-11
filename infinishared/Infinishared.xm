@@ -54,39 +54,21 @@ static NSString *downloadingIconBundleID(SBIcon *icon) {
 	%orig;
 }
 - (void)removeAppForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
-	[NSTimer scheduledTimerWithTimeInterval:0.01
-									 target:self
-								   selector:@selector(infinisharedRemoveIcon:)
-								   userInfo:[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) retain]
-									repeats:NO];
+	[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 	
 	%orig;
 }
 - (void)replaceDownloadingIconIdentifiers:(id)identifiers withAppIconIdentifiers:(id)appIconIdentifiers {
 	for (NSString *identifier in identifiers) {
-		[NSTimer scheduledTimerWithTimeInterval:0.01
-									 target:self
-								   selector:@selector(infinisharedRemoveIcon:)
-								   userInfo:[iconWithIdentifier(identifier) retain]
-									repeats:NO];
+		[iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 	}
 	
 	%orig;
 }
 - (void)removeApplicationIconForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
-	[NSTimer scheduledTimerWithTimeInterval:0.01
-									 target:self
-								   selector:@selector(infinisharedRemoveIcon:)
-								   userInfo:[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) retain]
-									repeats:NO];
+	[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 	
 	%orig;
-}
-%new(v@:@)
-- (void)infinisharedRemoveIcon:(NSTimer *)timer {
-	SBIcon *icon = [timer userInfo];
-	[icon removeFromSuperview];
-	[icon release];
 }
 %end
 
