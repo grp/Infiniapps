@@ -16,7 +16,7 @@
 
 #import <substrate.h>
 
-#import "infinishared/infinishared.h"
+#import "infinishared/Infinishared.h"
 
 
 #define idForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))

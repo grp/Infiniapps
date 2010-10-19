@@ -1,6 +1,6 @@
 
 #import "Infinidock.h"
-#import "infinishared/infinishared.h"
+#import "infinishared/Infinishared.h"
 
 @interface IFScrollView : UIScrollView { }
 @end
