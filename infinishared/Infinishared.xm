@@ -44,11 +44,7 @@ static NSString *downloadingIconBundleID(SBIcon *icon) {
 %hook SBIconModel
 - (void)replaceDownloadingDisplayIdentifiers:(NSArray *)identifiers withDisplayIdentifiers:(NSArray *)displayIdentifiers {
 	for (NSString *identifier in identifiers) {
-		[NSTimer scheduledTimerWithTimeInterval:0.01
-									 target:self
-								   selector:@selector(infinisharedRemoveIcon:)
-								   userInfo:[iconWithIdentifier(identifier) retain]
-									repeats:NO];
+		[iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 	}
 	
 	%orig;

@@ -8,7 +8,7 @@ Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport
 Conflicts: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree
 Replaces: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree
 Provides: com.saurik.iphone.fid, com.macciti.6icondock
-Version: 1.6.7
+Version: 1.6.8
 Architecture: iphoneos-arm
 Description: Scroll your dock with infinite icons!
  Add as many icons as you want to your dock and scroll back and forth

@@ -5,7 +5,7 @@ Package: com.chpwn.infiniboard
 Section: Tweaks
 Pre-Depends: firmware (>= 3.0)
 Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport (>= 1.6)
-Version: 1.6.1
+Version: 1.6.2
 Architecture: iphoneos-arm
 Description: Vertically scroll your home screen pages!
  Fully iPad, iPhone, and iPod touch compatible.
