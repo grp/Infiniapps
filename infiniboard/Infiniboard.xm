@@ -165,7 +165,7 @@ static void firstFreeSlot(id iconList, int *xptr, int *yptr) {
 			[iconList firstFreeSlotIndex:&idx];
 			[iconList getX:&x Y:&y forIndex:idx forOrientation:[[UIDevice currentDevice] orientation]];
 		} else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex)]) {
-			[iconList getX:&x Y:&y forIndex:[iconList firstFreeSlotIndex] forOrientation:[[UIDevice currentDevice] orientation]];
+			[iconList getX:&x Y:&y forIndex:(int)[iconList firstFreeSlotIndex] forOrientation:[[UIDevice currentDevice] orientation]];
 		}
 	}
 
@@ -355,6 +355,18 @@ static void fixDockOrdering() {
 		return %orig;
 
 	return 50 * (int) [objc_getClass("SBIconListView") iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]];
+}
+- (id)iconAtX:(int)x Y:(int)y {
+	// This fixes a crash on iOS 3.x (before iPad).
+	// I have /no/ idea what causes this crash.
+	// It seems to be trying to find an icon on the
+	// newly-inserted empty page, but I can't tell.
+
+	// So, essentially, I have no idea what the bug
+	// was or why this fixes it, but it seems to work.
+
+	if ([[self icons] count] < (y * MAX_ICON_COLUMNS(self)) + x) return nil;
+	else return %orig;
 }
 - (id)initWithFrame:(CGRect)frame {
 	self = %orig;
