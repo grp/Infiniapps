@@ -56,7 +56,7 @@ static int disableInsetFlag;
 	if (!disableVisibleFlag) {
 		return [[IFWildcat sharedInstance] visibleCount];
 	}
-	
+
 	return %orig;
 }
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
@@ -65,7 +65,7 @@ static int disableInsetFlag;
 		origin.x = [[IFWildcat sharedInstance] originForIcon:x].x;
 		return origin;
 	}
-	
+
 	return %orig;
 }
 - (int)columnAtPoint:(CGPoint)point {
@@ -73,7 +73,7 @@ static int disableInsetFlag;
 		int col = [[IFWildcat sharedInstance] columnAtPoint:point];
 		return col;
 	}
-	
+
 	return %orig;
 }
 - (void)addSubview:(UIView *)subview {
@@ -94,13 +94,13 @@ static int disableInsetFlag;
 - (float)horizontalIconInset {
 	if (!disableInsetFlag)
 		return [[IFBase sharedInstance] leftInset];
-	
+
 	return %orig;
 }
 - (float)horizontalInsetForCenteringIcons {
 	if ([[IFBase sharedInstance] spacingMethod] == kSpacingMethodEven)
 		return 0.0f;
-	
+
 	return %orig;
 }
 %end
@@ -108,11 +108,11 @@ static int disableInsetFlag;
 %hook SBIconController
 - (id)insertIcon:(SBIcon *)icon intoIconList:(SBIconList *)list index:(int)index moveNow:(BOOL)now duration:(float)duration {
 	id ret;
-	
+
 	disableVisibleFlag += 1;
 	ret = %orig;
 	disableVisibleFlag -= 1;
-	
+
 	return ret;
 }
 %end
@@ -133,12 +133,12 @@ static int disableInsetFlag;
 
 __attribute__((constructor)) static void wildcat_init() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
+
 	if ([IFFirmwareVersion() hasPrefix:@"3.2"]) {
 		%init(Wildcat);
 		[IFBase setClass:[IFWildcat class]];
 		[IFWildcat sharedInstance];
 	}
-	
+
 	[pool release];
 }

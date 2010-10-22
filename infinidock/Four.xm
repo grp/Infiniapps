@@ -38,14 +38,14 @@ static int disablePointFlag;
 }
 - (IFSpacingMethod)spacingMethod {
 	IFSpacingMethod spacing = [super spacingMethod];
-	
+
 	if (spacing == kSpacingMethodPaged) {
 		return kSpacingMethodPaged;
 	} else {
 		if ((([self currentIconCount] < [self defaultIconCount]) && ([self currentIconCount] < [self selectedIconCount])) || ([self selectedIconCount] == [self defaultIconCount]) || (([self selectedIconCount] > [self defaultIconCount]) && ([self currentIconCount] == [self defaultIconCount]))) {
 			return kSpacingMethodDefault;
 		}
-		
+
 		return kSpacingMethodEven;
 	}
 }
@@ -57,7 +57,7 @@ static int disablePointFlag;
 - (int)maxIcons {
 	if (!disableColumnFlag)
 		return [[IFFour sharedInstance] maxColumns];
-	
+
 	return MAX([[IFFour sharedInstance] selectedIconCount], [[IFFour sharedInstance] defaultIconCount]);
 }
 %end
@@ -71,24 +71,24 @@ static int disablePointFlag;
 + (int)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	if (forceColumnFlag)
 		return [[IFBase sharedInstance] currentIconCount];
-	
+
 	if (!disableColumnFlag)
 		return [[IFBase sharedInstance] maxColumns];
-		
+
 	return [[IFBase sharedInstance] defaultIconCount];
 }
 - (int)visibleIconsInDock {
 	if (!disableVisibleFlag) {
 		return [[IFBase sharedInstance] visibleCount];
 	}
-	
+
 	return %orig;
 }
 - (int)iconsInRowForSpacingCalculation {
 	if (!disableVisibleFlag) {
 		return [[IFBase sharedInstance] visibleCount];
 	}
-	
+
 	return %orig;
 }
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
@@ -97,11 +97,11 @@ static int disablePointFlag;
 		origin.x = [[IFBase sharedInstance] originForIcon:x].x;
 		return origin;
 	}
-	
+
 	disableColumnFlag += 1;
 	CGPoint ret = %orig;
 	disableColumnFlag -= 1;
-	
+
 	return ret;
 }
 - (int)columnAtPoint:(CGPoint)point {
@@ -109,19 +109,19 @@ static int disablePointFlag;
 		int col = [[IFBase sharedInstance] columnAtPoint:point];
 		return col;
 	}
-	
+
 	int row = 0;
 
 	SBIcon *icon;
 	for (int i = 0; i < [[self icons] count]; i++) {
 		icon = [[self icons] objectAtIndex:i];
-		
+
 		if (icon.center.x > point.x)
 			break;
-		
+
 		row = i;
 	}
-	
+
 	/*CGFloat left = [self sideIconInset] + [self _additionalSideInsetToCenterIcons];
 	CGFloat padding = [self horizontalIconPadding];
 	CGFloat icon = [objc_getClass("SBIcon") defaultIconSize].width;
@@ -131,9 +131,9 @@ static int disablePointFlag;
 		row += 1;
 		cur += icon + padding;
 	}*/
-		
+
 	// row = %orig;
-	
+
 	return row;
 }
 - (void)addSubview:(UIView *)subview {
@@ -154,13 +154,13 @@ static int disablePointFlag;
 + (float)sideIconInset {
 	if ([[IFBase sharedInstance] spacingMethod] == kSpacingMethodEven)
 		return [[IFBase sharedInstance] leftInset];
-	
+
 	return %orig;
 }
 - (float)_additionalSideInsetToCenterIcons {
 	if ([[IFBase sharedInstance] spacingMethod] == kSpacingMethodEven)
 		return 0.0f;
-	
+
 	return %orig;
 }
 - (void)setOrientation:(int)orientation duration:(double)duration {
@@ -176,7 +176,7 @@ static int disablePointFlag;
 	if (list == [[IFBase sharedInstance] dock]) disableVisibleFlag += 1;
 	ret = %orig;
 	if (list == [[IFBase sharedInstance] dock]) disableVisibleFlag -= 1;
-	
+
 	return ret;
 }
 %end
@@ -206,7 +206,7 @@ __attribute__((constructor)) static void four_init() {
 		[IFBase setClass:[IFFour class]];
 		[IFFour sharedInstance];
 	}
-	
+
 	[pool release];
 }
 

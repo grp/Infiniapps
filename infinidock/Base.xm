@@ -29,14 +29,14 @@ static Class specificClass;
 	static id shared;
 	if (shared == nil)
 		shared = [[specificClass alloc] init];
-	
+
 	return shared;
 }
 - (id)init {
 	if ((self = [super init])) {
 		// pass;
 	}
-	
+
 	return self;
 }
 - (void)applyPreferences {
@@ -55,20 +55,20 @@ static Class specificClass;
 	NSUInteger currentCount = [self currentIconCount];
 	NSUInteger selectedCount = [self selectedIconCount];
 	NSUInteger defaultCount = [self defaultIconCount];
-	
-	
+
+
 	BOOL lessThanDefaultSelected	= selectedCount	<	defaultCount;
 	BOOL moreThanDefaultSelected	= selectedCount	> 	defaultCount;
 	BOOL exactlyDefaultSelected		= selectedCount	== 	defaultCount;
-	
+
 	BOOL exactlyOnePage		= currentCount	==	selectedCount;
 	BOOL moreThanOnePage	= currentCount	>	selectedCount;
 	BOOL lessThanOnePage	= currentCount	<	selectedCount;
-	
+
 	BOOL exactlyDefault		= currentCount	==	defaultCount;
 	BOOL lessThanDefault	= currentCount	<	defaultCount;
 	BOOL moreThanDefault	= currentCount	>	defaultCount;
-	
+
 	if (PAGING_ENABLED) {
 		if (moreThanDefaultSelected)
 			return kSpacingMethodEven;
@@ -93,39 +93,39 @@ static Class specificClass;
 	int pageCount = [self currentIconCount] / [self selectedIconCount];
 	if ([self currentIconCount] % [self selectedIconCount])
 		pageCount += 1;
-		
+
 	return pageCount;
 }
 - (CGFloat)scrollWidth {
 	CGFloat width;
 	CGFloat frameWidth = [self dockWidth];
-	
+
 	if (PAGING_ENABLED) {
 		int pages = [self pageCount];
 		width = pages * frameWidth;
-	} else {		
+	} else {
 		width = [self originForIcon:[self currentIconCount] - 1].x;
 		width += ICON_WIDTH;
 		width += [self originForIcon:0].x;
-		
+
 		if (width < frameWidth) width = frameWidth;
 	}
-	
+
 	return width;
 }
 - (void)fixScrollWidth {
 	CGFloat width = [self scrollWidth];
-	
+
 	if (scrollView.contentSize.width != width) {
 		CGPoint offset = [scrollView contentOffset];
 		if (offset.x + [self dockWidth] > width)
 			offset.x = width - [self dockWidth];
-		
+
 		[UIView beginAnimations:nil context:NULL];
 		[UIView setAnimationDuration:0.3f];
 		[scrollView setContentSize:CGSizeMake(width, [dock bounds].size.height)];
 		[UIView commitAnimations];
-		
+
 		[scrollView setContentOffset:offset animated:NO];
 	}
 }
@@ -144,7 +144,7 @@ static Class specificClass;
 }
 - (CGFloat)leftInset {
 	IFSpacingMethod spacing = [self spacingMethod];
-	
+
 	if (spacing == kSpacingMethodEven) {
 		return 0.0f;
 	} else {
@@ -154,34 +154,34 @@ static Class specificClass;
 - (CGPoint)originForIcon:(NSInteger)idx { 
 	CGPoint origin;
 	IFSpacingMethod spacing = [self spacingMethod];
-	
+
 	int page, basex;
-	
+
 	basex = idx % [self selectedIconCount];
 	page = idx / [self selectedIconCount];
-	
+
 	if (spacing == kSpacingMethodPaged) {
 		origin = [self origOrigin:basex];
-		
+
 		origin.x += [self dockWidth] * page;
 	} else if (spacing == kSpacingMethodEven) {
 		origin = [self origOrigin:basex];
-		
+
 		int divisor = MIN([self currentIconCount], [self selectedIconCount]);
 		int sections = divisor * 2;
 		int which = ((basex + 1) * 2) - 1;
 		CGFloat sectionWidth = [self dockWidth] / sections;
-		
+
 		origin.x = sectionWidth * which;
-		
+
 		origin.x -= ICON_WIDTH / 2;
 		origin.x = roundf(origin.x);
-		
+
 		origin.x += [self dockWidth] * page;
 	} else if (spacing == kSpacingMethodDefault) {
 		origin = [self origOrigin:idx];
 	}
-	
+
 	return origin;
 }
 - (NSUInteger)maxColumns {
@@ -190,34 +190,34 @@ static Class specificClass;
 }
 - (NSInteger)columnAtPoint:(CGPoint)point {
 	int ret;
-	
+
 	// Convert from absolute points to scrollview points
 	point.x += scrollView.contentOffset.x;
-	
+
 	IFSpacingMethod spacing = [self spacingMethod];
 	if (spacing == kSpacingMethodPaged) {
 		int page = ((int) point.x) / ((int) [self dockWidth]);
 		CGPoint base = CGPointMake(fmodf(point.x, [self dockWidth]), point.y);
-		
+
 		ret = [self origColumn:base];
 		ret += page * MAX_PERPAGE;
 	} else {
 		// This doesn't work in all cases.
 		ret = [self origColumn:point];
-		
+
 		/* Inefficient alert!
 		ret = 0;
 		SBIcon *icon;
 		for (int i = 0; i < [[dock icons] count]; i++) {
 			icon = [[dock icons] objectAtIndex:i];
-			
+
 			if (icon.frame.origin.x + (ICON_WIDTH / 2) > point.x)
 				break;
-			
+
 			ret = i;
 		}*/
 	}
-	
+
 	return MIN(ret, [self currentIconCount] - 1);
 }
 - (BOOL)containsIcon:(SBIcon *)icon {
@@ -234,7 +234,7 @@ static Class specificClass;
 	// NOTE: -scrollViewDidEndDecelerating isn't called if you manually stop the scrolling,
 	//       so this calls it in that case (won't decelerate). This allows the scrolling snap
 	//       code to all be in one place
-	
+
 	if (!decelerate) {
 		[self scrollViewDidEndDecelerating:scrollView];
 	}
@@ -243,18 +243,18 @@ static Class specificClass;
 	// NEW: Check for no icons to prevent crashing. (There's no snapping w/o icons anyway, so it's fine.)
 	if (disableDecelerateFlag || !SNAP_ENABLED || PAGING_ENABLED || [[objc_getClass("SBIconController") sharedInstance] isEditing] || ![[[self dock] icons] count])
 		return;
-	
+
 	CGFloat dockWidth = [self dockWidth];
 	CGFloat fullWidth = scrollView.contentSize.width;
-	CGPoint offset = [scrollView contentOffset];	
-	
+	CGPoint offset = [scrollView contentOffset];
+
 	// columnAtPoint: expects screen coords
 	NSInteger position = [self columnAtPoint:CGPointZero];
-		
+
 	SBIcon *icon = [[dock icons] objectAtIndex:position];
 	CGFloat leftOrigin = icon.frame.origin.x;
 	CGFloat leftOffset = [self originForIcon:0].x;
-	
+
 	if (offset.x - leftOrigin < ICON_WIDTH / 2) {
 		offset.x = leftOrigin - leftOffset;
 	} else {
@@ -262,12 +262,12 @@ static Class specificClass;
 		// Right side of the icon plus just enough so that the next icon is shown correctly
 		offset.x = leftOrigin + ICON_WIDTH + (iconPadding - leftOffset);
 	}
-	
+
 	// Ensure that we never set the offset so that (offset + width) greater than scrolling width
 	if (offset.x + dockWidth > fullWidth) {
 		offset.x = fullWidth - dockWidth;
 	}
-	
+
 	disableDecelerateFlag += 1;
 	[scrollView setContentOffset:offset animated:YES];
 	disableDecelerateFlag -= 1;
@@ -281,10 +281,10 @@ static Class specificClass;
 	if (dock != _dock) {
 		[dock autorelease];
 		dock = [_dock retain];
-		
+
 		[scrollView autorelease];
 		scrollView = [[IFScrollView alloc] init];
-		
+
 		[self applyPreferences];
 		[self fixScrollWidth];
 	}
@@ -293,7 +293,7 @@ static Class specificClass;
 /* Restore to Page */
 - (void)restoreToPage {
 	[self applyPreferences];
-	
+
 	// Check for disabled, then bail.
 	// NEW: Check for no icons (to prevent crashes). There's no point w/o any icons anyway.
 	if (RESTORE_PAGE == 0 || ![[[self dock] icons] count]) return;
@@ -304,38 +304,38 @@ static Class specificClass;
 	int iconCount = [self currentIconCount];
 	int selectedCount = [self selectedIconCount];
 	int pageCount = [self pageCount];
-	
+
 	// No point calculating if we won't be moving
 	if (iconCount <= selectedCount) return;
-	
+
 	// The first page is always at the beginning
 	if (restorePage == 0) {
 		[scrollView setContentOffset:CGPointZero animated:NO];
 		return;
 	}
-	
+
 	if (PAGING_ENABLED) {
 		if (restorePage >= pageCount) restorePage = pageCount - 1;
-		
+
 		newOffset.x = restorePage * pageWidth;
 	} else {
 		int startIndex = selectedCount * restorePage;
-		
+
 		if (iconCount < startIndex + selectedCount) {
 			startIndex = iconCount - selectedCount;
 		}
-		
+
 		SBIcon *icon = [[dock icons] objectAtIndex:startIndex];
 		newOffset.x = icon.frame.origin.x;
-		
+
 		CGFloat iconPadding;
 		CGPoint one = [dock originForIconAtX:0 Y:0];
 		CGPoint two = [dock originForIconAtX:1 Y:0];
 		iconPadding = (two.x - one.x) - ICON_WIDTH;
-		
+
 		newOffset.x -= iconPadding / 2;
 	}
-	
+
 	[scrollView setContentOffset:newOffset animated:NO];
 }
 
@@ -348,7 +348,7 @@ static Class specificClass;
 %hook SBUIController
 - (void)finishLaunching {
 	%orig;
-	
+
 	[[IFBase sharedInstance] applyPreferences];
 	[[IFBase sharedInstance] fixScrollWidth];
 }
@@ -369,7 +369,7 @@ static Class specificClass;
 		frame.origin.x += scrollView.contentOffset.x;
 		[icon setFrame:frame];
 	}
-	
+
 	%orig;
 }
 - (void)setGrabbedIcon:(SBIcon *)icon {
@@ -380,12 +380,12 @@ static Class specificClass;
 }
 - (void)setIsEditing:(BOOL)editing {
 	%orig;
-	
+
 	UIScrollView *scrollView = [[IFBase sharedInstance] scrollView];
-	
+
 	if (editing) [scrollView setDelaysContentTouches:YES];
 	else [scrollView setDelaysContentTouches:NO];
-	
+
 	if (!editing) [[scrollView delegate] scrollViewDidEndDecelerating:scrollView];
 }
 %end
@@ -396,20 +396,20 @@ static Class specificClass;
 	if (dock && [self isKindOfClass:objc_getClass("SBStackIcon")] && [[IFBase sharedInstance] containsIcon:self]) {
 		return dock;
 	}
-	
+
 	return %orig;
 }
 - (CGRect)frame {
 	CGRect frame = %orig;
-	
+
 	id dock = [[IFBase sharedInstance] dock];
 	UIScrollView *scrollView = [[IFBase sharedInstance] scrollView];
-	
+
 	// Fix for Stack v3 and Categories
 	if ((dock && [[IFBase sharedInstance] containsIcon:self] && ([self isKindOfClass:objc_getClass("SBStackIcon")] || ([self isKindOfClass:objc_getClass("SBApplicationIcon")] && [[[(SBApplicationIcon *) self application] displayIdentifier] hasPrefix:@"com.bigboss.categories."])))) {
 		frame.origin.x -= scrollView.contentOffset.x;
 	}
-	
+
 	return frame;
 }
 %end
@@ -436,21 +436,21 @@ extern "C" CFStringRef kLockdownUniqueDeviceIDKey;
 NSString *IFFirmwareVersion() {
 	static NSString *version = nil;
 	if (version) return version;
-	
+
 	NSDictionary *sys = [NSDictionary dictionaryWithContentsOfFile:@"/System/Library/CoreServices/SystemVersion.plist"];
 	version = [[sys objectForKey:@"ProductVersion"] retain];
 	return version;
-	
-	
+
+
 	/*id port = nil;
 	NSString *val = nil;
-	
+
 	if((port = lockdown_connect())) {
 		val = lockdown_copy_value(port, 0, kLockdownProductVersionKey);
 		[val autorelease];
 		lockdown_disconnect(port);
 	}
-	
+
 	return val;*/
 }
 #endif
@@ -463,23 +463,23 @@ void IFPreferencesChanged(CFNotificationCenterRef center, void *observer, CFStri
 
 __attribute__((constructor)) static void infinidock_init() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
+
 	// SpringBoard only!
 	if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
 		return;
-	
+
 	NSLog(@"Welcome to Infinidock.");
 	NSLog(@"The cake is a lie.");
-	
+
 	%init(Base);
 	infinishared_init();
-	
+
 	prefsDict = [[NSDictionary alloc] initWithContentsOfFile:IFPreferencesFilePath];
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, IFPreferencesChanged, CFSTR(IFPreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
-	
+
 	dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_NOW);
 	[[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infinidock"];
-	
+
 	[pool release];
 }
 

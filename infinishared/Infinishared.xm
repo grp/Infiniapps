@@ -26,12 +26,12 @@
 static SBIcon *iconWithIdentifier(NSString *identifier) {
 	SBIcon *icon;
 	SBIconModel *iconModel = [$SBIconModel sharedInstance];
-	
+
 	if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
 	    icon = [iconModel leafIconForIdentifier:identifier];
 	else
 	    icon = [iconModel iconForDisplayIdentifier:identifier];
-	
+
 	return icon;
 }
 static NSString *downloadingIconBundleID(SBIcon *icon) {
@@ -46,24 +46,24 @@ static NSString *downloadingIconBundleID(SBIcon *icon) {
 	for (NSString *identifier in identifiers) {
 		[iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 	}
-	
+
 	%orig;
 }
 - (void)removeAppForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
 	[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
-	
+
 	%orig;
 }
 - (void)replaceDownloadingIconIdentifiers:(id)identifiers withAppIconIdentifiers:(id)appIconIdentifiers {
 	for (NSString *identifier in identifiers) {
 		[iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 	}
-	
+
 	%orig;
 }
 - (void)removeApplicationIconForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
 	[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
-	
+
 	%orig;
 }
 %end
@@ -91,7 +91,7 @@ static inline NSValue *value_from_point(CGPoint point) {
 void cache_init(id list, int r, int c) {
     NSNumber *key = [NSNumber numberWithInt:(int) list];
     NSMutableArray *rows = [NSMutableArray array];
-        
+
     for (int y = 0; y < c; y++) {
         NSMutableArray *row = [NSMutableArray array];
         for (int x = 0; x < r; x++) {

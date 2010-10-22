@@ -30,14 +30,14 @@ static int disableInsetFlag;
 }
 - (IFSpacingMethod)spacingMethod {
 	IFSpacingMethod spacing = [super spacingMethod];
-	
+
 	if (spacing == kSpacingMethodPaged) {
 		return kSpacingMethodPaged;
 	} else {
 		if ((([self currentIconCount] < [self defaultIconCount]) && ([self currentIconCount] < [self selectedIconCount])) || ([self selectedIconCount] == [self defaultIconCount]) || (([self selectedIconCount] > [self defaultIconCount]) && ([self currentIconCount] == [self defaultIconCount]))) {
 			return kSpacingMethodDefault;
 		}
-		
+
 		return kSpacingMethodEven;
 	}
 }
@@ -55,14 +55,14 @@ static int disableInsetFlag;
 - (int)maxIconColumns {
 	if (!disableColumnFlag)
 		return [[IFThree sharedInstance] maxColumns];
-	
+
 	return MAX([[IFThree sharedInstance] selectedIconCount], [[IFThree sharedInstance] defaultIconCount]);
 }
 - (int)visibleIconsInRow:(id)row {
 	if (!disableVisibleFlag) {
 		return [[IFThree sharedInstance] visibleCount];
 	}
-	
+
 	return MAX([[IFThree sharedInstance] selectedIconCount], [[IFThree sharedInstance] defaultIconCount]);
 }
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
@@ -71,11 +71,11 @@ static int disableInsetFlag;
 		origin.x = [[IFThree sharedInstance] originForIcon:x].x;
 		return origin;
 	}
-	
+
 	disableColumnFlag += 1;
 	CGPoint ret = %orig;
 	disableColumnFlag -= 1;
-	
+
 	return ret;
 }
 - (int)columnAtPoint:(CGPoint)point {
@@ -83,7 +83,7 @@ static int disableInsetFlag;
 		int col = [[IFThree sharedInstance] columnAtPoint:point];
 		return col;
 	}
-	
+
 	return %orig;
 }
 - (void)addSubview:(UIView *)subview {
@@ -104,7 +104,7 @@ static int disableInsetFlag;
 - (float)horizontalIconInset {
 	if (!disableInsetFlag)
 		return [[IFBase sharedInstance] leftInset];
-	
+
 	return %orig;
 }
 %end
@@ -121,12 +121,12 @@ static int disableInsetFlag;
 
 __attribute__((constructor)) static void three_init() {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
+
 	if ([IFFirmwareVersion() hasPrefix:@"3.1"] || [IFFirmwareVersion() hasPrefix:@"3.0"]) {
 		%init(Three);
 		[IFBase setClass:[IFThree class]];
 		[IFThree sharedInstance];
 	}
-	
+
 	[pool release];
 }
