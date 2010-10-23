@@ -8,15 +8,15 @@ Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport
 Conflicts: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree
 Replaces: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree
 Provides: com.saurik.iphone.fid, com.macciti.6icondock
-Version: 1.6.8
+Version: 1.6.9
 Architecture: iphoneos-arm
 Description: Scroll your dock with infinite icons!
  Add as many icons as you want to your dock and scroll back and forth
  Set how many you want on every page, or customize lots of other settings to make your dock as you want.
  Created by the developer of Infiniboard, Infinidock is the ultimate dock customization tool!
  <b>Now supports iPad and iOS4!</b>
-Depiction: http://moreinfo.thebigboss.org/moreinfo/infinidockcustom.html
-Homepage: http://moreinfo.thebigboss.org/moreinfo/infinidockcustom.html
+Depiction: http://chpwn.com/cydia/infinidock.html
+Homepage: http://chpwn.com/cydia/infinidock.html
 Sponsor: thebigboss.org <http://thebigboss.org>
 Tag: cydia::commercial
 dev: chpwn

@@ -109,7 +109,7 @@ static void firstFreeSlot(id iconList, int *x, int *y) {
 		[iconList firstFreeSlotIndex:&idx];
 		[iconList getX:x Y:y forIndex:idx forOrientation:[[UIDevice currentDevice] orientation]];
 	} else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex)]) {
-		[iconList getX:x Y:y forIndex:[iconList firstFreeSlotIndex] forOrientation:[[UIDevice currentDevice] orientation]];
+		[iconList getX:x Y:y forIndex:(int)[iconList firstFreeSlotIndex] forOrientation:[[UIDevice currentDevice] orientation]];
 	}
 }
 static void lastIconPosition(id iconList, int *xptr, int *yptr) {
