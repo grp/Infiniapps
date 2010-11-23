@@ -135,45 +135,12 @@
 			<true/>
 		</dict>
 		
-		<!-- Begin static text. -->
 		<dict>
 	      <key>cell</key>
 	      <string>PSGroupCell</string>
 	      <key>footerText</key>
-	      <string>Infinifolders © 2010 Grant Paul.</string>
-	    </dict>
-	    <dict>
-	      <key>cell</key>
-	      <string>PSGroupCell</string>
-	      <key>isStaticText</key>
-	      <string>true</string>
-	      <key>requiredCapabilities</key>
-	      <array>
-	        <dict>
-	          <key>wildcat</key>
-	          <false/>
-	          <key>voip</key>
-	          <false/>
-	        </dict>
-	      </array>
-	    </dict>
-	    <dict>
-	      <key>cell</key>
-	      <string>PSTitleValueCell</string>
-	      <key>label</key>
-	      <string>Infinifolders © 2010 Grant Paul.</string>
-	      <key>requiredCapabilities</key>
-	      <array>
-	        <dict>
-	          <key>wildcat</key>
-	          <false/>
-	          <key>voip</key>
-	          <false/>
-	        </dict>
-	      </array>
-	    </dict>
-		<!-- End static text. -->
-
-	</array>
+	      <string>Infinifolders is © 2010 Grant Paul.</string>
+        </dict>
+    </array>
 </dict>
 </plist>
