@@ -70,6 +70,7 @@
 #define WILDCAT ([UIDevice instancesRespondToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] performSelector:@selector(isWildcat)])
 #define MAX_ICON_ROWS(list) ((int) [$SBFolderIconListView iconRowsForInterfaceOrientation:[[UIDevice currentDevice] orientation]])
 #define MAX_ICON_COLUMNS(list) ((int) [$SBFolderIconListView iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]])
+#define DEFAULT_ROWS_FOR_ORIENTATION(o) (!!!(WILDCAT) ? 3 : (UIDeviceOrientationIsLandscape(o) ? 4 : 5))
 
 /* Categories */
 
@@ -97,7 +98,7 @@ static int disableOriginFlag = 0;
 static int disableResizeFlag = 0;
 static int disableIconsFlag = 0;
 
-#define kBottomPadding 5.0f
+#define kBottomPadding (WILDCAT ? (UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation]) ? -8.0f : -13.0f) : 3.0f)
 
 /* Utility methods */
 
@@ -196,17 +197,14 @@ static void fixListHeights() {
 			farthestOffset = [iconList originForIconAtX:x Y:y];
 
 			if ([scrollView frame].size.height < farthestOffset.y) {
-				newSize = CGSizeMake(scrollView.frame.size.width, farthestOffset.y + ICON_HEIGHT + topIconPadding(iconList));
+				newSize = CGSizeMake(scrollView.frame.size.width, farthestOffset.y + [scrollView frame].size.height - [iconList originForIconAtX:0 Y:(DEFAULT_ROWS_FOR_ORIENTATION([[UIDevice currentDevice] orientation])) - 1].y);
 			} else {
-				newSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height - kBottomPadding);
+				newSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height);
 			}
 		} else {
-			CGFloat totalHeight = (ceil(y / [iconList infinifoldersDefaultRows]) + 1) * ([scrollView frame].size.height + kBottomPadding);
+			CGFloat totalHeight = (ceil(y / [iconList infinifoldersDefaultRows]) + 1) * ([scrollView frame].size.height);
 			newSize = CGSizeMake(scrollView.frame.size.width, totalHeight);
 		}
-
-		// add back what we subtracted from the bottom
-		newSize.height += kBottomPadding;
 
 		if (!CGSizeEqualToSize(oldSize, newSize)) {
 			[UIView beginAnimations:nil context:NULL];
@@ -302,11 +300,12 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 
 		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
 
-		CGRect frame = [self bounds];
+        frame = [self bounds];
 		frame.size.height -= kBottomPadding;
-		[scrollView setFrame:frame];
+        [scrollView setFrame:frame];
 
 		[[$SBIconController sharedInstance] infinifoldersUpdateListHeights];
+        if ([self respondsToSelector:@selector(layoutIconsNow)]) [self layoutIconsNow];
 	}
 
 	fixListHeights();
@@ -346,11 +345,12 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 	if (VALID_LIST(self) && !disableOriginFlag) {
 		disableRowsFlag += 1;
 		CGPoint ret;
+		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
 
 		if (PAGING_ENABLED) {
-			int row = y / [self infinifoldersDefaultRows];
+			int page = y / [self infinifoldersDefaultRows];
 			ret = %orig(x, y % [self infinifoldersDefaultRows]);
-			ret.y += ([self frame].size.height - kBottomPadding) * row;
+			ret.y += ([scrollView frame].size.height) * page;
 		} else {
 			ret = %orig;
 		}
@@ -468,11 +468,15 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 typedef struct { int direction; CGRect rect; } notch_info_t;
 - (id)initWithRows:(int)rows notchInfo:(notch_info_t)notchInfo {
 	fixListHeights();
-	return %orig(MIN(rows, 3), notchInfo);
+	return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION(0)), notchInfo);
 }
 - (id)initWithRows:(int)rows notchInfo:(notch_info_t)notchInfo orientation:(int)orientation {
 	fixListHeights();
-	return %orig(MIN(rows, 3), notchInfo, orientation);
+	return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION(orientation)), notchInfo, orientation);
+}
+- (void)setRows:(int)rows notchInfo:(notch_info_t)notchInfo orientation:(int)orientation {
+    fixListHeights();
+    return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION(orientation)), notchInfo, orientation);
 }
 %end
 
