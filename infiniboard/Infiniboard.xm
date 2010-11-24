@@ -91,6 +91,7 @@
 #define NEW_STYLE (WILDCAT || !!objc_getClass("SBIconListView"))
 #define MAX_ICON_ROWS(list) ((int) (NEW_STYLE ? (int) [list iconRowsForCurrentOrientation] : (int) [list maxIconRows]))
 #define MAX_ICON_COLUMNS(list) ((int) (NEW_STYLE ? (int) [list iconColumnsForCurrentOrientation] : (int) [list maxIconColumns]))
+#define DEFAULT_ROWS_FOR_ORIENTATION(o) (!!!(WILDCAT) ? 4 : (UIDeviceOrientationIsLandscape(o) ? 4 : 5))
 
 /* Categories */
 
@@ -137,7 +138,7 @@ static NSDictionary *prefsDict = nil;
 static Class iconListClass;
 
 static int disableRowsFlag = 0;
-static int disableOriginFlag = 0; 
+static int disableOriginFlag = 0;
 static int disableResizeFlag = 0;
 static int disableIconsFlag = 0;
 
@@ -270,17 +271,14 @@ static void fixListHeights() {
 			farthestOffset = [iconList originForIconAtX:x Y:y];
 
 			if ([scrollView frame].size.height < farthestOffset.y) {
-				newSize = CGSizeMake(scrollView.frame.size.width, farthestOffset.y + ICON_HEIGHT + topIconPadding(iconList));
-			} else {
-				newSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height - kBottomPadding);
+                newSize = CGSizeMake(scrollView.frame.size.width, farthestOffset.y + [scrollView frame].size.height - [iconList originForIconAtX:0 Y:DEFAULT_ROWS_FOR_ORIENTATION([[UIDevice currentDevice] orientation]) - 1].y);
+            } else {
+				newSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height);
 			}
 		} else {
-			CGFloat totalHeight = (ceil(y / [iconList infiniboardDefaultRows]) + 1) * ([scrollView frame].size.height + kBottomPadding);
+			CGFloat totalHeight = (ceil(y / [iconList infiniboardDefaultRows]) + 1) * [scrollView frame].size.height;
 			newSize = CGSizeMake(scrollView.frame.size.width, totalHeight);
 		}
-
-		// add back what we subtracted from the bottom
-		newSize.height += kBottomPadding;
 
 		if (!CGSizeEqualToSize(oldSize, newSize)) {
 			[UIView beginAnimations:nil context:NULL];
@@ -427,11 +425,11 @@ static void fixDockOrdering() {
 	if (VALID_LIST(self) && [subview isKindOfClass:$SBIcon]) {
 		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
 		[scrollView addSubview:subview];
-
-		fixListHeights();
 	} else {
 		%orig;
 	}
+
+    fixListHeights();
 }
 - (void)_didRemoveSubview:(id)subview {
 	%orig;
@@ -459,12 +457,13 @@ static void fixDockOrdering() {
 	if (VALID_LIST(self) && !disableOriginFlag) {
 		disableRowsFlag += 1;
 		CGPoint ret;
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
 
 		if (PAGING_ENABLED) {
-			int row = y / (int) [self infiniboardDefaultRows];
-			ret = %orig(x, y % (int) [self infiniboardDefaultRows]);
-			ret.y += ([(UIView *) self frame].size.height - kBottomPadding) * row;
-		} else {
+		    int page = y / [self infiniboardDefaultRows];
+            ret = %orig(x, y % [self infiniboardDefaultRows]);
+            ret.y += ([self frame].size.height - kBottomPadding) * page;
+        } else {
 			ret = %orig;
 		}
 
@@ -501,23 +500,16 @@ static void fixDockOrdering() {
 	return 50;
 }
 - (int)rowAtPoint:(CGPoint)point {
-	int row = -1;
-
 	if (VALID_LIST(self)) {
-		disableRowsFlag += 1;
-		point = [[[$SBIconController sharedInstance] grabbedIcon] center];
+        int row = 0;
 
-		CGFloat offset = [[scrollies objectAtIndex:[listies indexOfObject:self]] contentOffset].y;
-		CGFloat top = topIconPadding(self) - offset;
+		disableRowsFlag += 1;
+		point.y += [[scrollies objectAtIndex:[listies indexOfObject:self]] contentOffset].y;
+
+        CGFloat top = topIconPadding(self);
 		CGFloat padding = verticalIconPadding(self);
 		CGFloat icon = ICON_HEIGHT;
-		CGFloat cur = top + icon + padding;
-
-		if (PAGING_ENABLED) {
-			row = floorf((point.y + offset) / [(UIView *) self frame].size.height) * MAX_ICON_ROWS(self);
-		} else {
-			point.y += offset;
-		}
+		CGFloat cur = top + icon + padding + (icon / 2);
 
 		while (cur < point.y) {
 			row += 1;
@@ -525,11 +517,10 @@ static void fixDockOrdering() {
 		}
 
 		disableRowsFlag -= 1;
+        return row;
 	} else {
-		row = %orig;
+		return %orig;
 	}
-
-	return row;
 }
 - (void)setTag:(int)tag {
 	%orig;
@@ -562,20 +553,8 @@ static void fixDockOrdering() {
 	int ret = %orig;
 
 	if (disableRowsFlag) {
-		CGPoint point = [icon frame].origin;
-		ret = 0;
-		CGFloat top = topIconPadding(self);
-		CGFloat padding = verticalIconPadding(self);
-		CGFloat icon = [$SBIcon defaultIconSize].height;
-		CGFloat cur = top + icon + padding;
-
-		while (cur < point.y) {
-			ret += 1;
-			cur += icon + padding;
-		}
-
-		if (ret >= MAX_ICON_ROWS(self)) ret = MAX_ICON_ROWS(self) - 1;
-	}
+	    ret = [self rowAtPoint:[icon frame].origin];
+    }
 
 	return ret;
 }
