@@ -65,7 +65,6 @@
 
 /* Macros */
 
-#define ICON_HEIGHT ((CGFloat) [$SBIcon defaultIconSize].height)
 #define VALID_LIST(list) ([list isMemberOfClass:$SBFolderIconListView])
 #define WILDCAT ([UIDevice instancesRespondToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] performSelector:@selector(isWildcat)])
 #define MAX_ICON_ROWS(list) ((int) [$SBFolderIconListView iconRowsForInterfaceOrientation:[[UIDevice currentDevice] orientation]])
@@ -374,12 +373,11 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 	return 50;
 }
 - (int)rowAtPoint:(CGPoint)point {
-	int row = 0;
-
 	if (VALID_LIST(self)) {
 		disableRowsFlag += 1;
 		point.y += [[scrollies objectAtIndex:[listies indexOfObject:self]] contentOffset].y;
 
+        int row = 0;
 		CGFloat top = [self topIconInset];
 		CGFloat padding = [self verticalIconPadding];
 		CGFloat icon = [$SBIcon defaultIconSize].height;
@@ -389,12 +387,12 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 			row += 1;
 			cur += icon + padding;
 		}
-		disableRowsFlag -= 1;
-	} else {
-		row = %orig;
-	}
 
-	return row;
+        disableRowsFlag -= 1;
+        return row;
+    } else {
+		return %orig;
+	}
 }
 - (NSArray *)icons {
 	NSArray *icons = %orig;
