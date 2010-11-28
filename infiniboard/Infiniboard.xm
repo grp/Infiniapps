@@ -47,7 +47,7 @@
 %class CategoryView;
 %class OverBoardPageView;
 
-@interface SBIconListView : SBIconList
+@interface SBIconList ()
 - (float)topIconInset;
 @end
 
@@ -85,7 +85,6 @@
 
 /* Macros */
 
-#define ICON_HEIGHT ((CGFloat) [$SBIcon defaultIconSize].height)
 #define VALID_LIST(list) ([list class] == iconListClass && [listies containsObject:list])
 #define WILDCAT ([UIDevice instancesRespondToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] performSelector:@selector(isWildcat)])
 #define NEW_STYLE (WILDCAT || !!objc_getClass("SBIconListView"))
@@ -220,30 +219,6 @@ static void applyPreferences() {
 			[scrollView setAlwaysBounceVertical:(y > rows)];
 		}
 	}
-}
-static CGFloat topIconPadding(id list) {
-	NSInvocation *invocation = [[NSInvocation alloc] init];
-	[invocation setTarget:list];
-	if ([list respondsToSelector:@selector(topIconPadding)]) {
-		[invocation setSelector:@selector(topIconPadding)];
-	} else {
-		[invocation setSelector:@selector(topIconInset)];
-	}
-	[invocation invoke];
-	CGFloat ret;
-	[invocation getReturnValue:&ret];
-	[invocation release];
-	return ret;
-}
-static CGFloat verticalIconPadding(id list) {
-	NSInvocation *invocation = [[NSInvocation alloc] init];
-	[invocation setTarget:list];
-	[invocation setSelector:@selector(verticalIconPadding)];
-	[invocation invoke];
-	CGFloat ret;
-	[invocation getReturnValue:&ret];
-	[invocation release];
-	return ret;
 }
 static void fixListHeights() {
 	if (disableResizeFlag)
@@ -501,15 +476,14 @@ static void fixDockOrdering() {
 }
 - (int)rowAtPoint:(CGPoint)point {
 	if (VALID_LIST(self)) {
-        int row = 0;
-
 		disableRowsFlag += 1;
 		point.y += [[scrollies objectAtIndex:[listies indexOfObject:self]] contentOffset].y;
 
-        CGFloat top = topIconPadding(self);
-		CGFloat padding = verticalIconPadding(self);
-		CGFloat icon = ICON_HEIGHT;
-		CGFloat cur = top + icon + padding + (icon / 2);
+        int row = 0;
+        CGFloat top = [self respondsToSelector:@selector(topIconInset)] ? [(SBIconList *)self topIconInset] : [(SBIconList *)self topIconPadding];
+		CGFloat padding = [(SBIconList *)self verticalIconPadding];
+		CGFloat icon = [$SBIcon defaultIconSize].height;
+		CGFloat cur = top + icon + padding;
 
 		while (cur < point.y) {
 			row += 1;
@@ -553,7 +527,10 @@ static void fixDockOrdering() {
 	int ret = %orig;
 
 	if (disableRowsFlag) {
-	    ret = [self rowAtPoint:[icon frame].origin];
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
+	    CGPoint o = [icon frame].origin;
+        o.y -= [scrollView contentOffset].y;
+        ret = [self rowAtPoint:o];
     }
 
 	return ret;
@@ -643,19 +620,6 @@ static void fixDockOrdering() {
 	// We disable the rows here so that the folder can slide SpringBoard "upwards" if necessary.
 	%orig;
 	disableRowsFlag -= 1;
-}
-%end
-
-%hook SBFolderIcon
-- (void)launch {
-	for (int i = 0; i < [scrollies count]; i++) {
-		UIScrollView *scrollView = [scrollies objectAtIndex:i];
-		id iconList = [listies objectAtIndex:i];
-
-		if ([[iconList icons] containsObjectIdenticalTo:self]) [scrollView scrollRectToVisible:[(UIView *) self frame] animated:NO];
-	}
-
-	%orig;
 }
 %end
 
