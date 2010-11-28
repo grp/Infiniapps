@@ -19,35 +19,35 @@ static int disablePointFlag;
 
 @implementation IFFour
 - (CGPoint)origOrigin:(NSInteger)idx {
-	disableOriginFlag += 1;
-	CGPoint ret = [[self dock] originForIconAtX:idx Y:0];
-	disableOriginFlag -= 1;
-	return ret;
+    disableOriginFlag += 1;
+    CGPoint ret = [[self dock] originForIconAtX:idx Y:0];
+    disableOriginFlag -= 1;
+    return ret;
 }
 - (NSInteger)origColumn:(CGPoint)point {
-	disablePointFlag += 1;
-	NSInteger ret = [[self dock] columnAtPoint:point];
-	disablePointFlag -= 1;
-	return ret;
+    disablePointFlag += 1;
+    NSInteger ret = [[self dock] columnAtPoint:point];
+    disablePointFlag -= 1;
+    return ret;
 }
 - (CGFloat)origInset {
-	disableInsetFlag += 1;
-	CGFloat ret = [dock sideIconInset];
-	disableInsetFlag -= 1;
-	return ret;
+    disableInsetFlag += 1;
+    CGFloat ret = [dock sideIconInset];
+    disableInsetFlag -= 1;
+    return ret;
 }
 - (IFSpacingMethod)spacingMethod {
-	IFSpacingMethod spacing = [super spacingMethod];
+    IFSpacingMethod spacing = [super spacingMethod];
 
-	if (spacing == kSpacingMethodPaged) {
-		return kSpacingMethodPaged;
-	} else {
-		if ((([self currentIconCount] < [self defaultIconCount]) && ([self currentIconCount] < [self selectedIconCount])) || ([self selectedIconCount] == [self defaultIconCount]) || (([self selectedIconCount] > [self defaultIconCount]) && ([self currentIconCount] == [self defaultIconCount]))) {
-			return kSpacingMethodDefault;
-		}
+    if (spacing == kSpacingMethodPaged) {
+        return kSpacingMethodPaged;
+    } else {
+        if ((([self currentIconCount] < [self defaultIconCount]) && ([self currentIconCount] < [self selectedIconCount])) || ([self selectedIconCount] == [self defaultIconCount]) || (([self selectedIconCount] > [self defaultIconCount]) && ([self currentIconCount] == [self defaultIconCount]))) {
+            return kSpacingMethodDefault;
+        }
 
-		return kSpacingMethodEven;
-	}
+        return kSpacingMethodEven;
+    }
 }
 @end
 
@@ -55,158 +55,158 @@ static int disablePointFlag;
 
 %hook SBDockIconListModel
 - (int)maxIcons {
-	if (!disableColumnFlag)
-		return [[IFFour sharedInstance] maxColumns];
+    if (!disableColumnFlag)
+        return [[IFFour sharedInstance] maxColumns];
 
-	return MAX([[IFFour sharedInstance] selectedIconCount], [[IFFour sharedInstance] defaultIconCount]);
+    return MAX([[IFFour sharedInstance] selectedIconCount], [[IFFour sharedInstance] defaultIconCount]);
 }
 %end
 
 %hook SBDockIconListView
 - (id)initWithFrame:(CGRect)frame {
-	self = %orig;
-	[[IFFour sharedInstance] setDock:self];
-	return self;
+    self = %orig;
+    [[IFFour sharedInstance] setDock:self];
+    return self;
 }
 + (int)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	if (forceColumnFlag)
-		return [[IFBase sharedInstance] currentIconCount];
+    if (forceColumnFlag)
+        return [[IFBase sharedInstance] currentIconCount];
 
-	if (!disableColumnFlag)
-		return [[IFBase sharedInstance] maxColumns];
+    if (!disableColumnFlag)
+        return [[IFBase sharedInstance] maxColumns];
 
-	return [[IFBase sharedInstance] defaultIconCount];
+    return [[IFBase sharedInstance] defaultIconCount];
 }
 - (int)visibleIconsInDock {
-	if (!disableVisibleFlag) {
-		return [[IFBase sharedInstance] visibleCount];
-	}
+    if (!disableVisibleFlag) {
+        return [[IFBase sharedInstance] visibleCount];
+    }
 
-	return %orig;
+    return %orig;
 }
 - (int)iconsInRowForSpacingCalculation {
-	if (!disableVisibleFlag) {
-		return [[IFBase sharedInstance] visibleCount];
-	}
+    if (!disableVisibleFlag) {
+        return [[IFBase sharedInstance] visibleCount];
+    }
 
-	return %orig;
+    return %orig;
 }
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
-	if (!disableOriginFlag) {
-		CGPoint origin = %orig;
-		origin.x = [[IFBase sharedInstance] originForIcon:x].x;
-		return origin;
-	}
+    if (!disableOriginFlag) {
+        CGPoint origin = %orig;
+        origin.x = [[IFBase sharedInstance] originForIcon:x].x;
+        return origin;
+    }
 
-	disableColumnFlag += 1;
-	CGPoint ret = %orig;
-	disableColumnFlag -= 1;
+    disableColumnFlag += 1;
+    CGPoint ret = %orig;
+    disableColumnFlag -= 1;
 
-	return ret;
+    return ret;
 }
 - (int)columnAtPoint:(CGPoint)point {
-	if (!disablePointFlag) {
-		int col = [[IFBase sharedInstance] columnAtPoint:point];
-		return col;
-	}
+    if (!disablePointFlag) {
+        int col = [[IFBase sharedInstance] columnAtPoint:point];
+        return col;
+    }
 
-	int row = 0;
+    int row = 0;
 
-	SBIcon *icon;
-	for (int i = 0; i < [[self icons] count]; i++) {
-		icon = [[self icons] objectAtIndex:i];
+    SBIcon *icon;
+    for (int i = 0; i < [[self icons] count]; i++) {
+        icon = [[self icons] objectAtIndex:i];
 
-		if (icon.center.x > point.x)
-			break;
+        if (icon.center.x > point.x)
+            break;
 
-		row = i;
-	}
+        row = i;
+    }
 
-	/*CGFloat left = [self sideIconInset] + [self _additionalSideInsetToCenterIcons];
-	CGFloat padding = [self horizontalIconPadding];
-	CGFloat icon = [objc_getClass("SBIcon") defaultIconSize].width;
-	CGFloat cur = left + icon + padding;
+    /*CGFloat left = [self sideIconInset] + [self _additionalSideInsetToCenterIcons];
+    CGFloat padding = [self horizontalIconPadding];
+    CGFloat icon = [objc_getClass("SBIcon") defaultIconSize].width;
+    CGFloat cur = left + icon + padding;
 
-	while (cur < point.x) {
-		row += 1;
-		cur += icon + padding;
-	}*/
+    while (cur < point.x) {
+        row += 1;
+        cur += icon + padding;
+    }*/
 
-	// row = %orig;
+    // row = %orig;
 
-	return row;
+    return row;
 }
 - (void)addSubview:(UIView *)subview {
-	if (subview == [[IFBase sharedInstance] scrollView]) {
-		%orig;
-	} else {
-		[[[IFBase sharedInstance] scrollView] addSubview:subview];
-	}
+    if (subview == [[IFBase sharedInstance] scrollView]) {
+        %orig;
+    } else {
+        [[[IFBase sharedInstance] scrollView] addSubview:subview];
+    }
 }
 - (void)removeAllIcons {
-	%orig;
-	[[[[IFBase sharedInstance] dock] icons] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    %orig;
+    [[[[IFBase sharedInstance] dock] icons] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
 - (void)setFrame:(CGRect)frame {
-	%orig;
-	[[IFBase sharedInstance] applyPreferences];
+    %orig;
+    [[IFBase sharedInstance] applyPreferences];
 }
 + (float)sideIconInset {
-	if ([[IFBase sharedInstance] spacingMethod] == kSpacingMethodEven)
-		return [[IFBase sharedInstance] leftInset];
+    if ([[IFBase sharedInstance] spacingMethod] == kSpacingMethodEven)
+        return [[IFBase sharedInstance] leftInset];
 
-	return %orig;
+    return %orig;
 }
 - (float)_additionalSideInsetToCenterIcons {
-	if ([[IFBase sharedInstance] spacingMethod] == kSpacingMethodEven)
-		return 0.0f;
+    if ([[IFBase sharedInstance] spacingMethod] == kSpacingMethodEven)
+        return 0.0f;
 
-	return %orig;
+    return %orig;
 }
 - (void)setOrientation:(int)orientation duration:(double)duration {
-	%orig;
-	[self setIconsNeedLayout];
+    %orig;
+    [self setIconsNeedLayout];
 }
 %end
 
 %hook SBIconController
 - (id)insertIcon:(SBIcon *)icon intoListView:(SBIconList *)list iconIndex:(int)index moveNow:(BOOL)now {
-	id ret;
+    id ret;
 
-	if (list == [[IFBase sharedInstance] dock]) disableVisibleFlag += 1;
-	ret = %orig;
-	if (list == [[IFBase sharedInstance] dock]) disableVisibleFlag -= 1;
+    if (list == [[IFBase sharedInstance] dock]) disableVisibleFlag += 1;
+    ret = %orig;
+    if (list == [[IFBase sharedInstance] dock]) disableVisibleFlag -= 1;
 
-	return ret;
+    return ret;
 }
 %end
 
 %hook SBUIController
 - (void)restoreIconListAnimated:(BOOL)animated {
-	%orig;
-	[[IFBase sharedInstance] restoreToPage];
+    %orig;
+    [[IFBase sharedInstance] restoreToPage];
 }
 - (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)wallpaper {
-	%orig;
-	[[IFBase sharedInstance] restoreToPage];
+    %orig;
+    [[IFBase sharedInstance] restoreToPage];
 }
 - (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher {
-	%orig;
-	[[IFBase sharedInstance] restoreToPage];
+    %orig;
+    [[IFBase sharedInstance] restoreToPage];
 }
 %end
 
 %end
 
 __attribute__((constructor)) static void four_init() {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"]) {
-		%init(Four);
-		[IFBase setClass:[IFFour class]];
-		[IFFour sharedInstance];
-	}
+    if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"]) {
+        %init(Four);
+        [IFBase setClass:[IFFour class]];
+        [IFFour sharedInstance];
+    }
 
-	[pool release];
+    [pool release];
 }
 

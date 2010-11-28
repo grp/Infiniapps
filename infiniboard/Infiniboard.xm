@@ -19,7 +19,7 @@
 #import "infinishared/Infinishared.h"
 
 
-#define idForKeyWithDefault(dict, key, default)	 ([(dict) objectForKey:(key)]?:(default))
+#define idForKeyWithDefault(dict, key, default)  ([(dict) objectForKey:(key)]?:(default))
 #define floatForKeyWithDefault(dict, key, default)   ({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result floatValue]:(default); })
 #define NSIntegerForKeyWithDefault(dict, key, default) (NSInteger)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result integerValue]:(default); })
 #define BOOLForKeyWithDefault(dict, key, default)    (BOOL)({ id _result = [(dict) objectForKey:(key)]; (_result)?[_result boolValue]:(default); })
@@ -117,15 +117,15 @@ extern "C" CFStringRef kLockdownProductTypeKey;
 extern "C" CFStringRef kLockdownUniqueDeviceIDKey;
 
 static NSString *IBFirmwareVersion() {
-	id port = nil;
-	NSString *val = nil;
-	if((port = lockdown_connect())) {
-		val = lockdown_copy_value(port, 0, kLockdownProductVersionKey);
-		[val autorelease];
-		lockdown_disconnect(port);
-	}
+    id port = nil;
+    NSString *val = nil;
+    if((port = lockdown_connect())) {
+        val = lockdown_copy_value(port, 0, kLockdownProductVersionKey);
+        [val autorelease];
+        lockdown_disconnect(port);
+    }
 
-	return val;
+    return val;
 }
 #endif
 
@@ -146,504 +146,504 @@ static int disableIconsFlag = 0;
 /* Utility methods */
 
 static void firstFreeSlot(id iconList, int *xptr, int *yptr) {
-	int x, y;
+    int x, y;
 
-	if ([iconList respondsToSelector:@selector(gridlockLastIconX:Y:)]) {
-		[iconList gridlockLastIconX:&x Y:&y];
+    if ([iconList respondsToSelector:@selector(gridlockLastIconX:Y:)]) {
+        [iconList gridlockLastIconX:&x Y:&y];
 
-		if (x == MAX_ICON_COLUMNS(iconList) - 1) {
-			x = 0;
-			y += 1;
-		} else {
-			x += 1;
-		}
-	} else {
-		if ([iconList respondsToSelector:@selector(firstFreeSlotX:Y:)]) {
-			[iconList firstFreeSlotX:&x Y:&y];
-		} else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex:)]) {
-			int idx;
-			[iconList firstFreeSlotIndex:&idx];
-			[iconList getX:&x Y:&y forIndex:idx forOrientation:[[UIDevice currentDevice] orientation]];
-		} else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex)]) {
-			[iconList getX:&x Y:&y forIndex:(int)[iconList firstFreeSlotIndex] forOrientation:[[UIDevice currentDevice] orientation]];
-		}
-	}
+        if (x == MAX_ICON_COLUMNS(iconList) - 1) {
+            x = 0;
+            y += 1;
+        } else {
+            x += 1;
+        }
+    } else {
+        if ([iconList respondsToSelector:@selector(firstFreeSlotX:Y:)]) {
+            [iconList firstFreeSlotX:&x Y:&y];
+        } else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex:)]) {
+            int idx;
+            [iconList firstFreeSlotIndex:&idx];
+            [iconList getX:&x Y:&y forIndex:idx forOrientation:[[UIDevice currentDevice] orientation]];
+        } else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex)]) {
+            [iconList getX:&x Y:&y forIndex:(int)[iconList firstFreeSlotIndex] forOrientation:[[UIDevice currentDevice] orientation]];
+        }
+    }
 
-	*xptr = x;
-	*yptr = y;
+    *xptr = x;
+    *yptr = y;
 }
 static void lastIconPosition(id iconList, int *xptr, int *yptr) {
-	int x, y;
+    int x, y;
 
-	firstFreeSlot(iconList, &x, &y);
+    firstFreeSlot(iconList, &x, &y);
 
-	// We want the /last/ icon, not the next free one
-	if (x == 0) {
-		y -= 1;
-		x = MAX_ICON_COLUMNS(iconList);
-	} else {
-		x -= 1;
-	}
+    // We want the /last/ icon, not the next free one
+    if (x == 0) {
+        y -= 1;
+        x = MAX_ICON_COLUMNS(iconList);
+    } else {
+        x -= 1;
+    }
 
-	*xptr = x;
-	*yptr = y;
+    *xptr = x;
+    *yptr = y;
 }
 static void applyPreferences() {
-	for (int i = 0; i < MIN([listies count], [scrollies count]); i++) {
-		UIScrollView *scrollView = [scrollies objectAtIndex:i];
-		SBIconList *iconList = [listies objectAtIndex:i];
+    for (int i = 0; i < MIN([listies count], [scrollies count]); i++) {
+        UIScrollView *scrollView = [scrollies objectAtIndex:i];
+        SBIconList *iconList = [listies objectAtIndex:i];
 
-		[iconList addSubview:scrollView];
+        [iconList addSubview:scrollView];
 
-		[scrollView setShowsVerticalScrollIndicator:YES];
-		if (SCROLLBAR_STYLE == SCROLLBAR_BLACK)
-			[scrollView setIndicatorStyle:UIScrollViewIndicatorStyleDefault];
-		else if (SCROLLBAR_STYLE == SCROLLBAR_WHITE)
-			[scrollView setIndicatorStyle:UIScrollViewIndicatorStyleWhite];
-		else if (SCROLLBAR_STYLE == SCROLLBAR_DISABLED)
-			[scrollView setShowsVerticalScrollIndicator:NO];
+        [scrollView setShowsVerticalScrollIndicator:YES];
+        if (SCROLLBAR_STYLE == SCROLLBAR_BLACK)
+            [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleDefault];
+        else if (SCROLLBAR_STYLE == SCROLLBAR_WHITE)
+            [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleWhite];
+        else if (SCROLLBAR_STYLE == SCROLLBAR_DISABLED)
+            [scrollView setShowsVerticalScrollIndicator:NO];
 
-		[scrollView setScrollEnabled:SCROLL_ENABLED];
-		[scrollView setAlwaysBounceVertical:!SCROLL_BOUNCE];
-		[scrollView setBounces:SCROLL_BOUNCE != BOUNCE_DISABLED];
-		[scrollView setClipsToBounds:CLIPS_TO_BOUNDS];
-		[iconList setClipsToBounds:CLIPS_TO_BOUNDS];
-		[scrollView setPagingEnabled:PAGING_ENABLED];
+        [scrollView setScrollEnabled:SCROLL_ENABLED];
+        [scrollView setAlwaysBounceVertical:!SCROLL_BOUNCE];
+        [scrollView setBounces:SCROLL_BOUNCE != BOUNCE_DISABLED];
+        [scrollView setClipsToBounds:CLIPS_TO_BOUNDS];
+        [iconList setClipsToBounds:CLIPS_TO_BOUNDS];
+        [scrollView setPagingEnabled:PAGING_ENABLED];
 
-		if (SCROLL_BOUNCE == BOUNCE_NOTDEFAULT) {
-			int x, y, rows;
-			lastIconPosition(iconList, &x, &y);
+        if (SCROLL_BOUNCE == BOUNCE_NOTDEFAULT) {
+            int x, y, rows;
+            lastIconPosition(iconList, &x, &y);
 
-			rows = [iconList infiniboardDefaultRows];
+            rows = [iconList infiniboardDefaultRows];
 
-			[scrollView setAlwaysBounceVertical:(y > rows)];
-		}
-	}
+            [scrollView setAlwaysBounceVertical:(y > rows)];
+        }
+    }
 }
 static void fixListHeights() {
-	if (disableResizeFlag)
-		return;
+    if (disableResizeFlag)
+        return;
 
-	for (int i = 0; i < MIN([listies count], [scrollies count]); i++) {
-		UIScrollView *scrollView = [scrollies objectAtIndex:i];
-		CGPoint offset = [scrollView contentOffset];
-		id iconList = [listies objectAtIndex:i];
+    for (int i = 0; i < MIN([listies count], [scrollies count]); i++) {
+        UIScrollView *scrollView = [scrollies objectAtIndex:i];
+        CGPoint offset = [scrollView contentOffset];
+        id iconList = [listies objectAtIndex:i];
 
-		if (![[iconList icons] count])
-			continue;
+        if (![[iconList icons] count])
+            continue;
 
-		CGSize newSize, oldSize;
-		CGPoint farthestOffset;
-		oldSize = [scrollView contentSize];
+        CGSize newSize, oldSize;
+        CGPoint farthestOffset;
+        oldSize = [scrollView contentSize];
 
-		int x, y;
-		if (![[$SBIconController sharedInstance] isEditing])
-			lastIconPosition(iconList, &x, &y);
-		else
-			firstFreeSlot(iconList, &x, &y);
+        int x, y;
+        if (![[$SBIconController sharedInstance] isEditing])
+            lastIconPosition(iconList, &x, &y);
+        else
+            firstFreeSlot(iconList, &x, &y);
 
-		if (![scrollView isPagingEnabled]) {
-			farthestOffset = [iconList originForIconAtX:x Y:y];
+        if (![scrollView isPagingEnabled]) {
+            farthestOffset = [iconList originForIconAtX:x Y:y];
 
-			if ([scrollView frame].size.height < farthestOffset.y) {
+            if ([scrollView frame].size.height < farthestOffset.y) {
                 newSize = CGSizeMake(scrollView.frame.size.width, farthestOffset.y + [scrollView frame].size.height - [iconList originForIconAtX:0 Y:DEFAULT_ROWS_FOR_ORIENTATION([[UIDevice currentDevice] orientation]) - 1].y);
             } else {
-				newSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height);
-			}
-		} else {
-			CGFloat totalHeight = (ceil(y / [iconList infiniboardDefaultRows]) + 1) * [scrollView frame].size.height;
-			newSize = CGSizeMake(scrollView.frame.size.width, totalHeight);
-		}
+                newSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height);
+            }
+        } else {
+            CGFloat totalHeight = (ceil(y / [iconList infiniboardDefaultRows]) + 1) * [scrollView frame].size.height;
+            newSize = CGSizeMake(scrollView.frame.size.width, totalHeight);
+        }
 
-		if (!CGSizeEqualToSize(oldSize, newSize)) {
-			[UIView beginAnimations:nil context:NULL];
-			[UIView setAnimationDuration:0.4f];
-			[scrollView setContentSize:newSize];
-			[UIView commitAnimations];
-			[scrollView setContentOffset:offset animated:NO];
-		}
-	}
+        if (!CGSizeEqualToSize(oldSize, newSize)) {
+            [UIView beginAnimations:nil context:NULL];
+            [UIView setAnimationDuration:0.4f];
+            [scrollView setContentSize:newSize];
+            [UIView commitAnimations];
+            [scrollView setContentOffset:offset animated:NO];
+        }
+    }
 }
 static void preferenceChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-	[prefsDict release];
-	prefsDict = [[NSDictionary alloc] initWithContentsOfFile:PreferencesFilePath];
-	[[$SBIconModel sharedInstance] relayout];
+    [prefsDict release];
+    prefsDict = [[NSDictionary alloc] initWithContentsOfFile:PreferencesFilePath];
+    [[$SBIconModel sharedInstance] relayout];
 }
 static void restoreIconList() {
-	applyPreferences();
+    applyPreferences();
 
-	for (UIScrollView *scrollView in scrollies) {
-		if (RESTORE_ENABLED)
-			[scrollView setContentOffset:CGPointZero animated:NO];
+    for (UIScrollView *scrollView in scrollies) {
+        if (RESTORE_ENABLED)
+            [scrollView setContentOffset:CGPointZero animated:NO];
 
-		if (SCROLLBAR_STYLE != SCROLLBAR_DISABLED)
-			[scrollView flashScrollIndicators];
-	}
+        if (SCROLLBAR_STYLE != SCROLLBAR_DISABLED)
+            [scrollView flashScrollIndicators];
+    }
 }
 static SBIcon *iconWithIdentifier(NSString *identifier) {
-	SBIcon *icon;
-	SBIconModel *iconModel = [$SBIconModel sharedInstance];
-	if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
-	    icon = [iconModel leafIconForIdentifier:identifier];
-	else
-	    icon = [iconModel iconForDisplayIdentifier:identifier];
+    SBIcon *icon;
+    SBIconModel *iconModel = [$SBIconModel sharedInstance];
+    if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
+        icon = [iconModel leafIconForIdentifier:identifier];
+    else
+        icon = [iconModel iconForDisplayIdentifier:identifier];
 
-	return icon;
+    return icon;
 }
 static id currentIconList() {
-	id iconList;
-	if ([$SBIconController instancesRespondToSelector:@selector(currentIconList)])
-		iconList = [[$SBIconController sharedInstance] currentIconList];
-	else
-		iconList = [[$SBIconController sharedInstance] currentRootIconList];
-	return iconList;
+    id iconList;
+    if ([$SBIconController instancesRespondToSelector:@selector(currentIconList)])
+        iconList = [[$SBIconController sharedInstance] currentIconList];
+    else
+        iconList = [[$SBIconController sharedInstance] currentRootIconList];
+    return iconList;
 }
 static void fixDockOrdering() {
-	// FIXME: please be less lame
-	UIView *dockSuperview;
-	if ([$SBIconModel instancesRespondToSelector:@selector(buttonBar)])
-		dockSuperview = [[[$SBIconModel sharedInstance] buttonBar] superview];
-	else
-		dockSuperview = [[[$SBIconController sharedInstance] dock] superview];
+    // FIXME: please be less lame
+    UIView *dockSuperview;
+    if ([$SBIconModel instancesRespondToSelector:@selector(buttonBar)])
+        dockSuperview = [[[$SBIconModel sharedInstance] buttonBar] superview];
+    else
+        dockSuperview = [[[$SBIconController sharedInstance] dock] superview];
 
-	id iconList = currentIconList();
+    id iconList = currentIconList();
 
-	[[[[iconList superview] superview] superview] bringSubviewToFront:dockSuperview];
+    [[[[iconList superview] superview] superview] bringSubviewToFront:dockSuperview];
 }
 
 %group IFGroup
 
 %hook SBIconListModel
 + (int)maxIcons {
-	if (disableRowsFlag || [self class] != objc_getClass("SBIconListModel"))
-		return %orig;
+    if (disableRowsFlag || [self class] != objc_getClass("SBIconListModel"))
+        return %orig;
 
-	return 50 * (int) [objc_getClass("SBIconListView") iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]];
+    return 50 * (int) [objc_getClass("SBIconListView") iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]];
 }
 %end
 
 %hook IconList
 + (int)maxIcons {
-	if (disableRowsFlag || [self class] != objc_getClass("SBIconListView"))
-		return %orig;
+    if (disableRowsFlag || [self class] != objc_getClass("SBIconListView"))
+        return %orig;
 
-	return 50 * (int) [objc_getClass("SBIconListView") iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]];
+    return 50 * (int) [objc_getClass("SBIconListView") iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]];
 }
 - (id)iconAtX:(int)x Y:(int)y {
-	// This fixes a crash on iOS 3.x (before iPad).
-	// I have /no/ idea what causes this crash.
-	// It seems to be trying to find an icon on the
-	// newly-inserted empty page, but I can't tell.
+    // This fixes a crash on iOS 3.x (before iPad).
+    // I have /no/ idea what causes this crash.
+    // It seems to be trying to find an icon on the
+    // newly-inserted empty page, but I can't tell.
 
-	// So, essentially, I have no idea what the bug
-	// was or why this fixes it, but it seems to work.
+    // So, essentially, I have no idea what the bug
+    // was or why this fixes it, but it seems to work.
 
-	if ([[self icons] count] < (y * MAX_ICON_COLUMNS(self)) + x) return nil;
-	else return %orig;
+    if ([[self icons] count] < (y * MAX_ICON_COLUMNS(self)) + x) return nil;
+    else return %orig;
 }
 - (id)initWithFrame:(CGRect)frame {
-	self = %orig;
+    self = %orig;
 
-	if ([self isMemberOfClass:iconListClass]) {
-		UIScrollView *scrollView = [[UIScrollView alloc] init];
-		[self addSubview:scrollView];
+    if ([self isMemberOfClass:iconListClass]) {
+        UIScrollView *scrollView = [[UIScrollView alloc] init];
+        [self addSubview:scrollView];
 
-		[scrollies addObject:scrollView];
-		[listies addObject:self];
-		[scrollView release];
-		[self release];
+        [scrollies addObject:scrollView];
+        [listies addObject:self];
+        [scrollView release];
+        [self release];
 
-		[scrollView setDelegate:(id<UIScrollViewDelegate>) self];
-		[scrollView setDelaysContentTouches:NO];
-		[scrollView setContentSize:[(UIView *) self bounds].size];
+        [scrollView setDelegate:(id<UIScrollViewDelegate>) self];
+        [scrollView setDelaysContentTouches:NO];
+        [scrollView setContentSize:[(UIView *) self bounds].size];
 
-		applyPreferences();
+        applyPreferences();
 
         cache_init(self, MAX_ICON_ROWS(self), MAX_ICON_COLUMNS(self));
-	}
+    }
 
-	return self;
+    return self;
 }
 - (void)dealloc {
-	if (VALID_LIST(self)) {
-		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
-		[scrollView removeFromSuperview];
-		[scrollView setDelegate:nil];
-		[[scrollView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    if (VALID_LIST(self)) {
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
+        [scrollView removeFromSuperview];
+        [scrollView setDelegate:nil];
+        [[scrollView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
-		[self retain];
-		[listies removeObject:self];
-		[scrollies removeObject:scrollView];
+        [self retain];
+        [listies removeObject:self];
+        [scrollies removeObject:scrollView];
 
         cache_destroy(self);
-	}
+    }
 
-	%orig;
+    %orig;
 }
 - (void)setFrame:(CGRect)frame {
-	%orig;
+    %orig;
 
-	if (VALID_LIST(self)) {
-		if (![listies containsObject:self] || [scrollies count] < [listies indexOfObject:self]) 
-			return;
+    if (VALID_LIST(self)) {
+        if (![listies containsObject:self] || [scrollies count] < [listies indexOfObject:self]) 
+            return;
 
-		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
 
-		CGRect frame = [(UIView *) self bounds];
-		frame.size.height -= kBottomPadding;
-		[scrollView setFrame:frame];
+        CGRect frame = [(UIView *) self bounds];
+        frame.size.height -= kBottomPadding;
+        [scrollView setFrame:frame];
 
-		[[$SBIconController sharedInstance] infiniboardUpdateListHeights];
-	}
+        [[$SBIconController sharedInstance] infiniboardUpdateListHeights];
+    }
 }
 - (void)addSubview:(UIView *)subview {
-	if (VALID_LIST(self) && [subview isKindOfClass:$SBIcon]) {
-		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
-		[scrollView addSubview:subview];
-	} else {
-		%orig;
-	}
+    if (VALID_LIST(self) && [subview isKindOfClass:$SBIcon]) {
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
+        [scrollView addSubview:subview];
+    } else {
+        %orig;
+    }
 
     fixListHeights();
 }
 - (void)_didRemoveSubview:(id)subview {
-	%orig;
+    %orig;
 
-	if (VALID_LIST(self)) fixListHeights();
+    if (VALID_LIST(self)) fixListHeights();
 }
 - (void)setOrientation:(int)orientation {
-	%orig;
+    %orig;
 
-	if (VALID_LIST(self)) [[$SBIconController sharedInstance] infiniboardUpdateListHeights];
+    if (VALID_LIST(self)) [[$SBIconController sharedInstance] infiniboardUpdateListHeights];
 }
 - (void)removeAllIcons {
-	%orig;
+    %orig;
 
-	if (VALID_LIST(self)) {
-		for (SBIconList *iconList in listies) {
-			// Huh? Why does this make the whole icon list blank?
-			// [[iconList icons] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-		}
-	}
+    if (VALID_LIST(self)) {
+        for (SBIconList *iconList in listies) {
+            // Huh? Why does this make the whole icon list blank?
+            // [[iconList icons] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        }
+    }
 }
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
-	if (cache_ready(self)) return cache_point(self, x, y);
+    if (cache_ready(self)) return cache_point(self, x, y);
 
-	if (VALID_LIST(self) && !disableOriginFlag) {
-		disableRowsFlag += 1;
-		CGPoint ret;
+    if (VALID_LIST(self) && !disableOriginFlag) {
+        disableRowsFlag += 1;
+        CGPoint ret;
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
 
-		if (PAGING_ENABLED) {
-		    int page = y / [self infiniboardDefaultRows];
+        if (PAGING_ENABLED) {
+            int page = y / [self infiniboardDefaultRows];
             ret = %orig(x, y % [self infiniboardDefaultRows]);
             ret.y += ([self frame].size.height - kBottomPadding) * page;
         } else {
-			ret = %orig;
-		}
+            ret = %orig;
+        }
 
-		disableRowsFlag -= 1;
+        disableRowsFlag -= 1;
 
-		return ret;
-	} else if (!disableOriginFlag) {
+        return ret;
+    } else if (!disableOriginFlag) {
         disableRowsFlag += 1;
-		CGPoint ret = %orig;
+        CGPoint ret = %orig;
         disableRowsFlag -= 1;
         return ret;
-	} else {
+    } else {
         return %orig;
     }
 }
 - (int)maxIconRows {
-	if (disableRowsFlag || !VALID_LIST(self)) {
-		return %orig;
-	}
+    if (disableRowsFlag || !VALID_LIST(self)) {
+        return %orig;
+    }
 
-	return 50;
+    return 50;
 }
 - (int)iconRowsForInterfaceOrientation:(int)interfaceOrientation {
-	if (disableRowsFlag || !VALID_LIST(self)) {
-		return %orig;
-	}
+    if (disableRowsFlag || !VALID_LIST(self)) {
+        return %orig;
+    }
 
-	return 50;
+    return 50;
 }
 + (int)iconRowsForInterfaceOrientation:(int)interfaceOrientation {
-	if (disableRowsFlag || self != iconListClass)
-		return %orig;
+    if (disableRowsFlag || self != iconListClass)
+        return %orig;
 
-	return 50;
+    return 50;
 }
 - (int)rowAtPoint:(CGPoint)point {
-	if (VALID_LIST(self)) {
-		disableRowsFlag += 1;
-		point.y += [[scrollies objectAtIndex:[listies indexOfObject:self]] contentOffset].y;
+    if (VALID_LIST(self)) {
+        disableRowsFlag += 1;
+        point.y += [[scrollies objectAtIndex:[listies indexOfObject:self]] contentOffset].y;
 
         int row = 0;
         CGFloat top = [self respondsToSelector:@selector(topIconInset)] ? [(SBIconList *)self topIconInset] : [(SBIconList *)self topIconPadding];
-		CGFloat padding = [(SBIconList *)self verticalIconPadding];
-		CGFloat icon = [$SBIcon defaultIconSize].height;
-		CGFloat cur = top + icon + padding;
+        CGFloat padding = [(SBIconList *)self verticalIconPadding];
+        CGFloat icon = [$SBIcon defaultIconSize].height;
+        CGFloat cur = top + icon + padding;
 
-		while (cur < point.y) {
-			row += 1;
-			cur += icon + padding;
-		}
+        while (cur < point.y) {
+            row += 1;
+            cur += icon + padding;
+        }
 
-		disableRowsFlag -= 1;
+        disableRowsFlag -= 1;
         return row;
-	} else {
-		return %orig;
-	}
+    } else {
+        return %orig;
+    }
 }
 - (void)setTag:(int)tag {
-	%orig;
+    %orig;
 
-	if (VALID_LIST(self) && (tag == 23954 || tag == 0x4645)) {
-		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
+    if (VALID_LIST(self) && (tag == 23954 || tag == 0x4645)) {
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
         [self retain]; [scrollView retain];
 
-		[scrollies removeObject:scrollView];
-		[listies removeObject:self];
+        [scrollies removeObject:scrollView];
+        [listies removeObject:self];
 
-		for (UIView *subview in [scrollView subviews]) {
+        for (UIView *subview in [scrollView subviews]) {
             [self addSubview:subview];
-		}
+        }
 
-		[scrollView removeFromSuperview];
+        [scrollView removeFromSuperview];
 
         cache_destroy(self);
-	}
+    }
 }
 - (NSArray *)icons {
-	NSArray *icons = %orig;
+    NSArray *icons = %orig;
 
     if (VALID_LIST(self) && disableIconsFlag)
-		icons = [icons subarrayWithRange:NSMakeRange(0, MIN(MAX_ICON_ROWS(self) * MAX_ICON_COLUMNS(self), [icons count]))];
+        icons = [icons subarrayWithRange:NSMakeRange(0, MIN(MAX_ICON_ROWS(self) * MAX_ICON_COLUMNS(self), [icons count]))];
 
-	return icons;
+    return icons;
 }
 - (int)rowForIcon:(SBIcon *)icon {
-	int ret = %orig;
+    int ret = %orig;
 
-	if (disableRowsFlag) {
+    if (disableRowsFlag) {
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
-	    CGPoint o = [icon frame].origin;
+        CGPoint o = [icon frame].origin;
         o.y -= [scrollView contentOffset].y;
         ret = [self rowAtPoint:o];
     }
 
-	return ret;
+    return ret;
 }
 %new(i@:)
 - (int)infiniboardDefaultRows {
-	disableRowsFlag	+= 1;
-	int ret = MAX_ICON_ROWS(self);
-	disableRowsFlag -= 1;
+    disableRowsFlag += 1;
+    int ret = MAX_ICON_ROWS(self);
+    disableRowsFlag -= 1;
 
-	return ret;
+    return ret;
 }
 %end
 
 %hook SBUIController
 - (void)finishLaunching {
-	%orig;
-	applyPreferences();
+    %orig;
+    applyPreferences();
 }
 - (void)restoreIconList:(BOOL)unk {
-	%orig;
-	restoreIconList();
+    %orig;
+    restoreIconList();
 }
 - (void)restoreIconListAnimated:(BOOL)animated {
-	%orig;
-	restoreIconList();
+    %orig;
+    restoreIconList();
 }
 - (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)animateWallpaper {
-	%orig;
-	restoreIconList();
+    %orig;
+    restoreIconList();
 }
 - (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher {
-	%orig;
-	restoreIconList();
+    %orig;
+    restoreIconList();
 }
 %end
 
 %hook SBIconModel
 - (void)relayout {
-	%orig;
-	applyPreferences();
-	fixListHeights();
+    %orig;
+    applyPreferences();
+    fixListHeights();
 }
 %end
 
 %hook SBIconController
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(id)iconList {
-	if (VALID_LIST(iconList)) {
-		CGRect frame = [icon frame];
-		UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:iconList]];
-		frame.origin.y += [scrollView contentOffset].y;
-		[icon setFrame:frame];
+    if (VALID_LIST(iconList)) {
+        CGRect frame = [icon frame];
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:iconList]];
+        frame.origin.y += [scrollView contentOffset].y;
+        [icon setFrame:frame];
     }
 
-	%orig;
+    %orig;
 }
 - (void)setGrabbedIcon:(SBIcon *)icon {
-	for (UIScrollView *scrollView in scrollies) {
-		[scrollView setScrollEnabled:!icon];
-	}
+    for (UIScrollView *scrollView in scrollies) {
+        [scrollView setScrollEnabled:!icon];
+    }
 
-	%orig;
+    %orig;
 
-	if (!icon) fixListHeights();
+    if (!icon) fixListHeights();
 }
 - (void)setIsEditing:(BOOL)editing {
-	%orig;
+    %orig;
 
-	[NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(infiniboardUpdateListHeights) userInfo:nil repeats:NO];
+    [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(infiniboardUpdateListHeights) userInfo:nil repeats:NO];
 }
 - (void)scrollViewDidEndDecelerating:(id)scrollView {
-	if (FAST_RESTORE_ENABLED) {
-		for (UIScrollView *scrollView in scrollies) {
-			[scrollView setContentOffset:CGPointZero animated:NO];
-		}
-	}
+    if (FAST_RESTORE_ENABLED) {
+        for (UIScrollView *scrollView in scrollies) {
+            [scrollView setContentOffset:CGPointZero animated:NO];
+        }
+    }
 
-	%orig;
+    %orig;
 }
 %new(v@:)
 - (void)infiniboardUpdateListHeights {
-	fixListHeights();
-	applyPreferences();
+    fixListHeights();
+    applyPreferences();
 }
 - (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
-	disableRowsFlag += 1;
-	// We disable the rows here so that the folder can slide SpringBoard "upwards" if necessary.
-	%orig;
-	disableRowsFlag -= 1;
+    disableRowsFlag += 1;
+    // We disable the rows here so that the folder can slide SpringBoard "upwards" if necessary.
+    %orig;
+    disableRowsFlag -= 1;
 }
 %end
 
 %hook OverBoardPageView
 - (void)setIconList:(SBIconList *)list {
-	disableRowsFlag += 1;
-	disableOriginFlag += 1;
-	disableIconsFlag += 1;
-	%orig;
-	disableIconsFlag -= 1;
-	disableOriginFlag -= 1;
-	disableRowsFlag -= 1;
+    disableRowsFlag += 1;
+    disableOriginFlag += 1;
+    disableIconsFlag += 1;
+    %orig;
+    disableIconsFlag -= 1;
+    disableOriginFlag -= 1;
+    disableRowsFlag -= 1;
 }
 %end
 
 %hook CategoryView
 - (id)initWithDisplayIdentifier:(id)displayIdentifier {
-	disableRowsFlag += 1;
-	disableOriginFlag += 1;
-	self = %orig;
-	disableOriginFlag -=  1;
-	disableRowsFlag -=  1;
+    disableRowsFlag += 1;
+    disableOriginFlag += 1;
+    self = %orig;
+    disableOriginFlag -=  1;
+    disableRowsFlag -=  1;
 
-	return self;
+    return self;
 }
 %end
 
@@ -652,41 +652,41 @@ static void fixDockOrdering() {
 /* Constructor */
 
 __attribute__((constructor)) static void infiniboard_init() {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	// SpringBoard only!
-	if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
-		return;
+    // SpringBoard only!
+    if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
+        return;
 
-	NSLog(@"Welcome to Infiniboard.");
-	NSLog(@"IT'S A TRAP!");
+    NSLog(@"Welcome to Infiniboard.");
+    NSLog(@"IT'S A TRAP!");
 
-	prefsDict = [[NSDictionary alloc] initWithContentsOfFile:PreferencesFilePath];
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, preferenceChangedCallback, CFSTR(PreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
+    prefsDict = [[NSDictionary alloc] initWithContentsOfFile:PreferencesFilePath];
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, preferenceChangedCallback, CFSTR(PreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);
 
-	// Load other extensions
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/SixRows.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/7x7SpringBoard.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/CategoriesSB.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/FCSB.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/Iconoclasm.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRows.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart1.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart2.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart3.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/OverBoard.dylib", RTLD_LAZY);
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/LockInfo.dylib", RTLD_LAZY);
+    // Load other extensions
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/SixRows.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/7x7SpringBoard.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/CategoriesSB.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FCSB.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/Iconoclasm.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRows.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart1.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart2.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart3.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/OverBoard.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/LockInfo.dylib", RTLD_LAZY);
 
-	dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
-	[[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infiniboard"];
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
+    [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infiniboard"];
 
-	scrollies = [[NSMutableArray alloc] init];
-	listies = [[NSMutableArray alloc] init];
+    scrollies = [[NSMutableArray alloc] init];
+    listies = [[NSMutableArray alloc] init];
 
-	iconListClass = objc_getClass("SBIconList") ?: objc_getClass("SBIconListView");
-	static Class meta = object_getClass(iconListClass);
-	%init(IFGroup, IconList=iconListClass, +IconList=meta);
-	infinishared_init();
+    iconListClass = objc_getClass("SBIconList") ?: objc_getClass("SBIconListView");
+    static Class meta = object_getClass(iconListClass);
+    %init(IFGroup, IconList=iconListClass, +IconList=meta);
+    infinishared_init();
 
-	[pool release];
+    [pool release];
 }

@@ -24,54 +24,54 @@
 %group Infinishared
 
 static SBIcon *iconWithIdentifier(NSString *identifier) {
-	SBIcon *icon;
-	SBIconModel *iconModel = [$SBIconModel sharedInstance];
+    SBIcon *icon;
+    SBIconModel *iconModel = [$SBIconModel sharedInstance];
 
-	if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
-	    icon = [iconModel leafIconForIdentifier:identifier];
-	else
-	    icon = [iconModel iconForDisplayIdentifier:identifier];
+    if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
+        icon = [iconModel leafIconForIdentifier:identifier];
+    else
+        icon = [iconModel iconForDisplayIdentifier:identifier];
 
-	return icon;
+    return icon;
 }
 static NSString *downloadingIconBundleID(SBIcon *icon) {
-	if ([icon respondsToSelector:@selector(bundleID)]) 
-		return [icon bundleID];
-	else
-		return [icon applicationBundleID];
+    if ([icon respondsToSelector:@selector(bundleID)]) 
+        return [icon bundleID];
+    else
+        return [icon applicationBundleID];
 }
 
 %hook SBIconModel
 - (void)replaceDownloadingDisplayIdentifiers:(NSArray *)identifiers withDisplayIdentifiers:(NSArray *)displayIdentifiers {
-	for (NSString *identifier in identifiers) {
-		[iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
-	}
+    for (NSString *identifier in identifiers) {
+        [iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+    }
 
-	%orig;
+    %orig;
 }
 - (void)removeAppForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
-	[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+    [iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 
-	%orig;
+    %orig;
 }
 - (void)replaceDownloadingIconIdentifiers:(id)identifiers withAppIconIdentifiers:(id)appIconIdentifiers {
-	for (NSString *identifier in identifiers) {
-		[iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
-	}
+    for (NSString *identifier in identifiers) {
+        [iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+    }
 
-	%orig;
+    %orig;
 }
 - (void)removeApplicationIconForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
-	[iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+    [iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 
-	%orig;
+    %orig;
 }
 %end
 
 %end
 
 void infinishared_init() {
-	%init(Infinishared);
+    %init(Infinishared);
 }
 
 @interface IconListHelper
