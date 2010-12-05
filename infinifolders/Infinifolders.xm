@@ -304,7 +304,6 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
         [scrollView setFrame:frame];
 
         [[$SBIconController sharedInstance] infinifoldersUpdateListHeights];
-        if ([self respondsToSelector:@selector(layoutIconsNow)]) [self layoutIconsNow];
     }
 
     fixListHeights();
@@ -326,7 +325,13 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 }
 - (void)setOrientation:(int)orientation {
     %orig;
+
     [[$SBIconController sharedInstance] infinifoldersUpdateListHeights];
+}
+- (void)cleanupAfterRotation {
+    %orig;
+
+    [self layoutIconsNow];
 }
 - (void)removeAllIcons {
     %orig;
