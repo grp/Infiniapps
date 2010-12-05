@@ -332,6 +332,7 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
     %orig;
 
     [self layoutIconsNow];
+    [[$SBIconController sharedInstance] infinifoldersUpdateListHeights];
 }
 - (void)removeAllIcons {
     %orig;
