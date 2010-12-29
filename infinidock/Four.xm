@@ -7,6 +7,7 @@ static int disableColumnFlag;
 static int forceColumnFlag;
 static int disableInsetFlag;
 static int disablePointFlag;
+static BOOL is42;
 
 @interface SBDockIconListView
 - (float)sideIconInset;
@@ -85,7 +86,7 @@ static int disablePointFlag;
     return %orig;
 }
 - (int)iconsInRowForSpacingCalculation {
-    if (!disableVisibleFlag) {
+    if (!disableVisibleFlag || (is42 && [[IFBase sharedInstance] currentIconCount] >= [[IFBase sharedInstance]selectedIconCount])) {
         return [[IFBase sharedInstance] visibleCount];
     }
 
@@ -98,9 +99,11 @@ static int disablePointFlag;
         return origin;
     }
 
+    if (is42) disableVisibleFlag += 1;
     disableColumnFlag += 1;
     CGPoint ret = %orig;
     disableColumnFlag -= 1;
+    if (is42) disableVisibleFlag -= 1;
 
     return ret;
 }
@@ -202,6 +205,7 @@ __attribute__((constructor)) static void four_init() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"]) {
+        is42 = [IFFirmwareVersion() hasPrefix:@"4.2"];;
         %init(Four);
         [IFBase setClass:[IFFour class]];
         [IFFour sharedInstance];
