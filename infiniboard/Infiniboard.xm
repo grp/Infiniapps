@@ -577,6 +577,13 @@ static void fixDockOrdering() {
 %end
 
 %hook SBIconController
+- (CGRect)_contentViewRelativeFrameForIcon:(id)icon {
+    id list = [self currentRootIconList];
+    id scroll = [scrollies objectAtIndex:[listies indexOfObject:list]];
+    CGRect ret = %orig;
+    if (![icon isInDock]) ret.origin.y -= [scroll contentOffset].y;
+    return ret;
+}
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(id)iconList {
     if (VALID_LIST(iconList)) {
         CGRect frame = [icon frame];
@@ -614,6 +621,21 @@ static void fixDockOrdering() {
 - (void)infiniboardUpdateListHeights {
     fixListHeights();
     applyPreferences();
+}
+- (void)setOpenFolder:(id)folder {
+    %orig;
+
+    if (!folder) return;
+
+    SBIcon *icon = [[self openFolder] icon];
+    id list = [self currentRootIconList];
+    id scroll = [scrollies objectAtIndex:[listies indexOfObject:list]];
+    if (![icon isInDock]) {
+        [scroll scrollRectToVisible:[icon frame] animated:NO];
+    } else {
+        id icon = [list iconAtPoint:CGPointMake(0, [list bounds].size.height) index:NULL];
+        if (icon) [scroll scrollRectToVisible:[icon frame] animated:NO];
+    }
 }
 - (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
     disableRowsFlag += 1;
@@ -659,7 +681,7 @@ __attribute__((constructor)) static void infiniboard_init() {
         return;
 
     NSLog(@"Welcome to Infiniboard.");
-    NSLog(@"IT'S A TRAP!");
+    NSLog(@"Yo dawg, I heard you like dylibs, so I put a dylib in your dylib so you can dlopen() while you dlopen().");
 
     prefsDict = [[NSDictionary alloc] initWithContentsOfFile:PreferencesFilePath];
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, preferenceChangedCallback, CFSTR(PreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);

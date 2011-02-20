@@ -173,6 +173,12 @@ static BOOL is42;
 %end
 
 %hook SBIconController
+- (CGRect)_contentViewRelativeFrameForIcon:(id)icon {
+    id scroll = [[IFBase sharedInstance] scrollView];
+    CGRect ret = %orig;
+    if ([icon isInDock]) ret.origin.x -= [scroll contentOffset].x;
+    return ret;
+}
 - (id)insertIcon:(SBIcon *)icon intoListView:(SBIconList *)list iconIndex:(int)index moveNow:(BOOL)now {
     id ret;
 
