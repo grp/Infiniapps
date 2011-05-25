@@ -69,7 +69,7 @@
 #define WILDCAT ([UIDevice instancesRespondToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] performSelector:@selector(isWildcat)])
 #define MAX_ICON_ROWS(list) ((int) [$SBFolderIconListView iconRowsForInterfaceOrientation:[[UIDevice currentDevice] orientation]])
 #define MAX_ICON_COLUMNS(list) ((int) [$SBFolderIconListView iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]])
-#define DEFAULT_ROWS_FOR_ORIENTATION(o) (!!!(WILDCAT) ? 3 : (UIDeviceOrientationIsLandscape(o) ? 4 : 5))
+#define DEFAULT_ROWS_FOR_ORIENTATION(o) (!!!(WILDCAT) ? (UIDeviceOrientationIsLandscape(o) ? 2 : 3) : (UIDeviceOrientationIsLandscape(o) ? 4 : 5))
 
 /* Categories */
 
@@ -97,7 +97,7 @@ static int disableOriginFlag = 0;
 static int disableResizeFlag = 0;
 static int disableIconsFlag = 0;
 
-#define kBottomPadding (WILDCAT ? (UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation]) ? -8.0f : -13.0f) : 3.0f)
+#define kBottomPadding (WILDCAT ? (UIInterfaceOrientationIsLandscape((UIInterfaceOrientation) [[$SBIconController sharedInstance] orientation]) ? -8.0f : -13.0f) : 3.0f)
 
 /* Utility methods */
 
@@ -148,7 +148,6 @@ static void applyPreferences() {
         [scrollView setBounces:SCROLL_BOUNCE != BOUNCE_DISABLED];
         [scrollView setPagingEnabled:PAGING_ENABLED];
 
-        // Note: There is now stacking, so it works fine.
         if (SCROLL_BOUNCE == BOUNCE_NOTDEFAULT) {
             int x, y, rows;
             lastIconPosition(iconList, &x, &y);
@@ -174,10 +173,27 @@ static void fixListHeights() {
     if (disableResizeFlag)
         return;
 
+    CGFloat iconHeight = [$SBIcon defaultIconSize].height;
+
     for (int i = 0; i < MIN([listies count], [scrollies count]); i++) {
         UIScrollView *scrollView = [scrollies objectAtIndex:i];
         CGPoint offset = [scrollView contentOffset];
         id iconList = [listies objectAtIndex:i];
+
+        UIInterfaceOrientation orientation = (UIInterfaceOrientation) [[$SBIconController sharedInstance] orientation];
+        if (!WILDCAT && UIInterfaceOrientationIsLandscape(orientation)) {
+            // Hack for SBRotator's fail.
+            CGRect listFrame = [iconList bounds];
+            int icons = [[iconList icons] count];
+            int rows = icons / MAX_ICON_COLUMNS(iconList);
+            if (icons % MAX_ICON_COLUMNS(iconList)) rows += 1;
+            listFrame.size.height = rows * (iconHeight + [iconList verticalIconPadding]);
+            [scrollView setFrame:listFrame];
+        } else {
+            CGRect listFrame = [iconList bounds];
+            listFrame.size.height -= kBottomPadding;
+            [scrollView setFrame:listFrame];
+        }
 
         if (![[iconList icons] count])
             continue;
@@ -223,9 +239,10 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 @interface IFDebug
 @end
 @implementation IFDebug
-+ (id)scrollies {return scrollies;}
-+ (id)listies {return listies;}
-+ (Class)listClass {return iconListClass;}
++ (id)scrollies { return scrollies; }
++ (id)listies { return listies; }
++ (Class)listClass { return iconListClass; }
++ (void)fixHeights { fixListHeights(); }
 @end
 
 %group IFGroup
@@ -299,16 +316,12 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
 
-        frame = [self bounds];
-        frame.size.height -= kBottomPadding;
-        [scrollView setFrame:frame];
-
         [[$SBIconController sharedInstance] infinifoldersUpdateListHeights];
     }
 
     fixListHeights();
 }
-- (void)addSubview:(UIView *)subview {
+- (void)didAddSubview:(UIView *)subview {
     if (VALID_LIST(self) && [subview isKindOfClass:$SBIcon]) {
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
         [scrollView addSubview:subview];
@@ -472,7 +485,7 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 typedef struct { int direction; CGRect rect; } notch_info_t;
 - (id)initWithRows:(int)rows notchInfo:(notch_info_t)notchInfo {
     fixListHeights();
-    return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION(0)), notchInfo);
+    return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION([[UIApplication sharedApplication] interfaceOrientation])), notchInfo);
 }
 - (id)initWithRows:(int)rows notchInfo:(notch_info_t)notchInfo orientation:(int)orientation {
     fixListHeights();
