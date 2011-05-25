@@ -210,8 +210,8 @@ static BOOL is42;
 __attribute__((constructor)) static void four_init() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"]) {
-        is42 = [IFFirmwareVersion() hasPrefix:@"4.2"];;
+    if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"]) {
+        is42 = [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"];
         %init(Four);
         [IFBase setClass:[IFFour class]];
         [IFFour sharedInstance];

@@ -143,6 +143,14 @@ static int disableIconsFlag = 0;
 
 #define kBottomPadding 0.0f
 
+@interface IBDebug : NSObject { }
+@end
+@implementation IBDebug
++ (NSArray *)listies { return listies; }
++ (NSArray *)scrollies { return scrollies; }
++ (Class)iconListClass { return iconListClass; }
+@end
+
 /* Utility methods */
 
 static void firstFreeSlot(id iconList, int *xptr, int *yptr) {
@@ -396,7 +404,7 @@ static void fixDockOrdering() {
         [[$SBIconController sharedInstance] infiniboardUpdateListHeights];
     }
 }
-- (void)addSubview:(UIView *)subview {
+- (void)didAddSubview:(UIView *)subview {
     if (VALID_LIST(self) && [subview isKindOfClass:$SBIcon]) {
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
         [scrollView addSubview:subview];
@@ -681,7 +689,6 @@ __attribute__((constructor)) static void infiniboard_init() {
         return;
 
     NSLog(@"Welcome to Infiniboard.");
-    NSLog(@"Yo dawg, I heard you like dylibs, so I put a dylib in your dylib so you can dlopen() while you dlopen().");
 
     prefsDict = [[NSDictionary alloc] initWithContentsOfFile:PreferencesFilePath];
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, preferenceChangedCallback, CFSTR(PreferencesChangedNotification), NULL, CFNotificationSuspensionBehaviorCoalesce);

@@ -158,7 +158,7 @@
 			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
-			<integer>1</integer>
+			<integer>0</integer>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
