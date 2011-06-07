@@ -1,4 +1,4 @@
-Author: chpwn <infiniboard@xuzz.net>
+Author: chpwn <infiniboard@chpwn.com>
 Maintainer: BigBoss <bigboss@thebigboss.org>
 Name: Infiniboard
 Package: com.chpwn.infiniboard
@@ -15,5 +15,6 @@ Description: Vertically scroll your home screen pages!
 Depiction: http://chpwn.com/cydia/infiniboard.html
 Homepage: http://chpwn.com/cydia/infiniboard.html
 Sponsor: thebigboss.org <http://thebigboss.org>
+Icon: file:///Library/PreferenceLoader/Preferences/Infiniboard.png
 Tag: cydia::commercial
 dev: chpwn

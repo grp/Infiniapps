@@ -1,4 +1,4 @@
-Author: chpwn <infinifolders@xuzz.net>
+Author: chpwn <infinifolders@chpwn.com>
 Maintainer: BigBoss <bigboss@thebigboss.org>
 Name: Infinifolders
 Package: com.chpwn.infinifolders
@@ -13,6 +13,7 @@ Description: Scroll your folders and break the 12 icon barrier!
  Created by the developer of Infinidock and Infiniboard, Infinifolders is the ultimate way to manage your icons!
 Depiction: http://chpwn.com/cydia/infinifolders.html
 Homepage: http://chpwn.com/cydia/infinifolders.html
+Icon: file:///Library/PreferenceLoader/Preferences/Infinifolders.png
 Sponsor: thebigboss.org <http://thebigboss.org>
 Tag: cydia::commercial, purpose::extension
 dev: chpwn
