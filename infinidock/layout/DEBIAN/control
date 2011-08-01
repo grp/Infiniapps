@@ -1,4 +1,4 @@
-Author: chpwn <infinidock@chpwn.com>
+Author: chpwn <support@chpwn.com>
 Maintainer: BigBoss <bigboss@thebigboss.org>
 Name: Infinidock
 Package: com.chpwn.infinidock
@@ -11,7 +11,7 @@ Provides: com.saurik.iphone.fid, com.macciti.6icondock
 Version: 1.7.6
 Architecture: iphoneos-arm
 Description: Scroll your dock with infinite icons!
- Add as many icons as you want to your dock and scroll back and forth
+ Add as many icons as you want to your dock, to fully customize your SpringBoard.
 Depiction: http://chpwn.com/cydia/infinidock.html
 Homepage: http://chpwn.com/cydia/infinidock.html
 Icon: file:///Library/PreferenceLoader/Preferences/Infinidock.png
