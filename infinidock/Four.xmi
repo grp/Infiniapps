@@ -13,6 +13,7 @@ static BOOL is42;
 - (float)sideIconInset;
 - (float)_additionalSideInsetToCenterIcons;
 - (float)horizontalIconPadding;
+- (CGPoint)originForIconAtIndex:(int)index;
 @end
 
 @interface IFFour : IFBase { }
@@ -119,7 +120,7 @@ static BOOL is42;
     for (int i = 0; i < [[self icons] count]; i++) {
         icon = [[self icons] objectAtIndex:i];
 
-        if (icon.center.x > point.x)
+        if ([self originForIconAtIndex:i].x + (ICON_WIDTH / 2.0) > point.x)
             break;
 
         row = i;
@@ -210,8 +211,8 @@ static BOOL is42;
 __attribute__((constructor)) static void four_init() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"]) {
-        is42 = [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"];
+    if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"] || [IFFirmwareVersion() hasPrefix:@"5.0"]) {
+        is42 = [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"] || [IFFirmwareVersion() hasPrefix:@"5"];
         %init(Four);
         [IFBase setClass:[IFFour class]];
         [IFFour sharedInstance];

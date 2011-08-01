@@ -70,6 +70,7 @@
 #define MAX_ICON_ROWS(list) ((int) [$SBFolderIconListView iconRowsForInterfaceOrientation:[[UIDevice currentDevice] orientation]])
 #define MAX_ICON_COLUMNS(list) ((int) [$SBFolderIconListView iconColumnsForInterfaceOrientation:[[UIDevice currentDevice] orientation]])
 #define DEFAULT_ROWS_FOR_ORIENTATION(o) (!!!(WILDCAT) ? (UIDeviceOrientationIsLandscape(o) ? 2 : 3) : (UIDeviceOrientationIsLandscape(o) ? 4 : 5))
+#define DEFAULT_ICON_SIZE [objc_getClass("SBIconView") ?: objc_getClass("SBIcon") defaultIconSize]
 
 /* Categories */
 
@@ -173,7 +174,7 @@ static void fixListHeights() {
     if (disableResizeFlag)
         return;
 
-    CGFloat iconHeight = [$SBIcon defaultIconSize].height;
+    CGFloat iconHeight = DEFAULT_ICON_SIZE.height;
 
     for (int i = 0; i < MIN([listies count], [scrollies count]); i++) {
         UIScrollView *scrollView = [scrollies objectAtIndex:i];
@@ -322,7 +323,7 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
     fixListHeights();
 }
 - (void)didAddSubview:(UIView *)subview {
-    if (VALID_LIST(self) && [subview isKindOfClass:$SBIcon]) {
+    if (VALID_LIST(self) && ([subview isKindOfClass:$SBIcon] || [subview isKindOfClass:objc_getClass("SBIconView")])) {
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
         [scrollView addSubview:subview];
     } else {
@@ -399,7 +400,7 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
         int row = 0;
         CGFloat top = [self topIconInset];
         CGFloat padding = [self verticalIconPadding];
-        CGFloat icon = [$SBIcon defaultIconSize].height;
+        CGFloat icon = DEFAULT_ICON_SIZE.height;
         CGFloat cur = top + icon + padding;
 
         while (cur < point.y) {
@@ -453,10 +454,14 @@ static void preferenceChangedCallback(CFNotificationCenterRef center, void *obse
 }
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(id)iconList {
     if (VALID_LIST(iconList)) {
-        CGRect frame = [icon frame];
+        SBIcon *ic = icon;
+
+        if (objc_getClass("SBIconView")) ic = [[objc_getClass("SBIconViewMap") homescreenMap] iconViewForIcon:icon];
+
+        CGRect frame = [ic frame];
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:iconList]];
         frame.origin.y += [scrollView contentOffset].y;
-        [icon setFrame:frame];
+        [ic setFrame:frame];
     }
 
     %orig;

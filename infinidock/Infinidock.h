@@ -44,7 +44,7 @@
 #define MENU_BUTTON_RESTORE GetPreference(IFMenuRestore, BOOL)
 
 
-#define ICON_WIDTH ([objc_getClass("SBIcon") defaultIconSize].width)
+#define ICON_WIDTH ([objc_getClass("SBIconView") ?: objc_getClass("SBIcon") defaultIconSize].width)
 
 NSString *IFFirmwareVersion();
 

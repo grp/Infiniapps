@@ -251,8 +251,7 @@ static Class specificClass;
     // columnAtPoint: expects screen coords
     NSInteger position = [self columnAtPoint:CGPointZero];
 
-    SBIcon *icon = [[dock icons] objectAtIndex:position];
-    CGFloat leftOrigin = icon.frame.origin.x;
+    CGFloat leftOrigin = [self originForIcon:position].x;
     CGFloat leftOffset = [self originForIcon:0].x;
 
     if (offset.x - leftOrigin < ICON_WIDTH / 2) {
@@ -325,8 +324,7 @@ static Class specificClass;
             startIndex = iconCount - selectedCount;
         }
 
-        SBIcon *icon = [[dock icons] objectAtIndex:startIndex];
-        newOffset.x = icon.frame.origin.x;
+        newOffset.x = [dock originForIconAtX:startIndex Y:0].x;
 
         CGFloat iconPadding;
         CGPoint one = [dock originForIconAtX:0 Y:0];
@@ -364,10 +362,15 @@ static Class specificClass;
 %hook SBIconController
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(id)iconList {
     if (iconList == [[IFBase sharedInstance] dock]) {
-        CGRect frame = [icon frame];
+        SBIcon *ic = icon;
+
+        if (objc_getClass("SBIconView"))
+            ic = [[objc_getClass("SBIconViewMap") homescreenMap] iconViewForIcon:icon];
+
+        CGRect frame = [ic frame];
         UIScrollView *scrollView = [[IFBase sharedInstance] scrollView];
         frame.origin.x += scrollView.contentOffset.x;
-        [icon setFrame:frame];
+        [ic setFrame:frame];
     }
 
     %orig;
