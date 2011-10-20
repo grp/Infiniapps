@@ -177,6 +177,12 @@ static BOOL is42;
 - (CGRect)_contentViewRelativeFrameForIcon:(id)icon {
     id scroll = [[IFBase sharedInstance] scrollView];
     CGRect ret = %orig;
+
+    id map = [objc_getClass("SBIconViewMap") homescreenMap];
+    if (map != nil) {
+        icon = [map iconViewForIcon:icon];
+    }
+
     if ([icon isInDock]) ret.origin.x -= [scroll contentOffset].x;
     return ret;
 }

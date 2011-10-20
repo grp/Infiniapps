@@ -422,9 +422,6 @@ static Class specificClass;
 
 /* Constructor */
 
-#if TARGET_IPHONE_SIMULATOR
-NSString *IFFirmwareVersion() { return @"3.0"; }
-#else
 extern "C" id lockdown_connect();
 extern "C" void lockdown_disconnect(id port);
 extern "C" NSString *lockdown_copy_value(id port, int idk, CFStringRef value);
@@ -456,7 +453,6 @@ NSString *IFFirmwareVersion() {
 
     return val;*/
 }
-#endif
 
 void IFPreferencesChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
     [prefsDict release];
