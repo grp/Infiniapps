@@ -5,13 +5,12 @@ Package: com.chpwn.infinidock
 Section: Tweaks
 Pre-Depends: firmware (>= 3.0)
 Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport
-Conflicts: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree, com.thecyberduck.springboardenhancer
-Replaces: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree, com.thecyberduck.springboardenhancer
+Conflicts: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree, com.thecyberduck.springboardenhancer, com.filippobiga.springtomizelite, com.filippobiga.springtomize
+Replaces: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree, com.thecyberduck.springboardenhancer, com.filippobiga.springtomizelite, com.filippobiga.springtomize 
 Provides: com.saurik.iphone.fid, com.macciti.6icondock
-Version: 1.7.6
+Version: 1.8
 Architecture: iphoneos-arm
 Description: Scroll your dock with infinite icons!
- Add as many icons as you want to your dock, to fully customize your SpringBoard.
 Depiction: http://chpwn.com/cydia/infinidock.html
 Homepage: http://chpwn.com/cydia/infinidock.html
 Icon: file:///Library/PreferenceLoader/Preferences/Infinidock.png
