@@ -4,13 +4,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import <CoreGraphics/CoreGraphics.h>
 
-#import <SpringBoard/SpringBoard.h>
-#import <SpringBoard/SBIconList.h>
-#import <SpringBoard/SBIcon.h>
-#import <SpringBoard/SBIconController.h>
-#import <SpringBoard/SBUIController.h>
-#import <SpringBoard/SBDownloadingIcon.h>
-#import <SpringBoard/SBIconModel.h>
 #import <dlfcn.h>
 #import <objc/runtime.h>
 
@@ -23,7 +16,7 @@
 
 %group Infinishared
 
-static SBIcon *iconWithIdentifier(NSString *identifier) {
+static SBIcon *iconViewWithIdentifier(NSString *identifier) {
     SBIcon *icon;
     SBIconModel *iconModel = [$SBIconModel sharedInstance];
 
@@ -31,6 +24,11 @@ static SBIcon *iconWithIdentifier(NSString *identifier) {
         icon = [iconModel leafIconForIdentifier:identifier];
     else
         icon = [iconModel iconForDisplayIdentifier:identifier];
+
+    id map = [objc_getClass("SBIconViewMap") homescreenMap];
+    if (map != nil) {
+        icon = [map iconViewForIcon:icon];
+    }
 
     return icon;
 }
@@ -44,25 +42,25 @@ static NSString *downloadingIconBundleID(SBIcon *icon) {
 %hook SBIconModel
 - (void)replaceDownloadingDisplayIdentifiers:(NSArray *)identifiers withDisplayIdentifiers:(NSArray *)displayIdentifiers {
     for (NSString *identifier in identifiers) {
-        [iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+        [iconViewWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
     }
 
     %orig;
 }
 - (void)removeAppForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
-    [iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+    [iconViewWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 
     %orig;
 }
 - (void)replaceDownloadingIconIdentifiers:(id)identifiers withAppIconIdentifiers:(id)appIconIdentifiers {
     for (NSString *identifier in identifiers) {
-        [iconWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+        [iconViewWithIdentifier(identifier) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
     }
 
     %orig;
 }
 - (void)removeApplicationIconForDownloadingIcon:(SBDownloadingIcon *)downloadingIcon {
-    [iconWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
+    [iconViewWithIdentifier(downloadingIconBundleID(downloadingIcon)) performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.1];
 
     %orig;
 }
