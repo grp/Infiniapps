@@ -15,34 +15,13 @@
 	</dict>
 	<key>items</key>
 	<array>
-		<!-- Disabled because for most users this is useless! -->
-		<!--<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Max Icons</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSliderCell</string>
-			<key>min</key>
-			<integer>1</integer>
-			<key>max</key>
-			<integer>200</integer>
-			<key>showValue</key>
-			<true/>
-			<key>key</key>
-			<string>MaxIcons</string>
-			<key>defaults</key>
-			<string>com.chpwn.infiniboard</string>
-			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
-		</dict>-->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Settings</string>
+	        <key>footerText</key>
+	        <string>Infinifolders is © 2010-2011 Xuzz Productions, LLC.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -54,7 +33,7 @@
 			<key>label</key>
 			<string>Vertical Scrolling</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
+			<string>com.chpwn.infiniboard.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infiniboard</string>
 		</dict>
@@ -84,7 +63,7 @@
 			<key>defaults</key>
 			<string>com.chpwn.infiniboard</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
+			<string>com.chpwn.infiniboard.preferences-changed</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -112,7 +91,7 @@
 			<key>defaults</key>
 			<string>com.chpwn.infiniboard</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
+			<string>com.chpwn.infiniboard.preferences-changed</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -124,7 +103,7 @@
 			<key>label</key>
 			<string>Top on Paging</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
+			<string>com.chpwn.infiniboard.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infiniboard</string>
 		</dict>
@@ -138,7 +117,7 @@
 			<key>label</key>
 			<string>Top on App Exit</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
+			<string>com.chpwn.infiniboard.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infiniboard</string>
 		</dict>
@@ -152,7 +131,7 @@
 			<key>label</key>
 			<string>Vertical Paging</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
+			<string>com.chpwn.infiniboard.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infiniboard</string>
 		</dict>
@@ -166,33 +145,9 @@
 			<key>label</key>
 			<string>Hide Behind Dock</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infiniboard.prefs</string>
+			<string>com.chpwn.infiniboard.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infiniboard</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>isStaticText</key>
-			<true/>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSTitleValueCell</string>
-			<key>label</key>
-			<string>Infiniboard © 2010 Grant Paul.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSTitleValueCell</string>
-			<key>label</key>
-			<string>Thanks to Dustin Howett, Jay Freeman, Yanik Magnan, and Ryan Petrich.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSTitleValueCell</string>
-			<key>label</key>
-			<string>Thanks to mvit for the awesome gfx.</string>
 		</dict>
 	</array>
 </dict>

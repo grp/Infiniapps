@@ -16,8 +16,19 @@
 
 %group Infinishared
 
-static SBIcon *iconViewWithIdentifier(NSString *identifier) {
-    SBIcon *icon;
+@interface SBIconModel : NSObject { }
++ (id)sharedInstance;
+- (id)leafIconForIdentifier:(NSString *)identifier;
+- (id)iconForDisplayIdentifier:(NSString *)identifier;
+@end
+
+@interface SBIconViewMap : NSObject { }
++ (id)homescreenMap;
+- (UIView *)iconViewForIcon:(id)icon;
+@end
+
+static UIView *iconViewWithIdentifier(NSString *identifier) {
+    UIView *icon = nil;
     SBIconModel *iconModel = [$SBIconModel sharedInstance];
 
     if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
@@ -32,11 +43,11 @@ static SBIcon *iconViewWithIdentifier(NSString *identifier) {
 
     return icon;
 }
-static NSString *downloadingIconBundleID(SBIcon *icon) {
-    if ([icon respondsToSelector:@selector(bundleID)]) 
-        return [icon bundleID];
+static NSString *downloadingIconBundleID(id icon) {
+    if ([icon respondsToSelector:@selector(bundleID)])
+        return [icon performSelector:@selector(bundleID)];
     else
-        return [icon applicationBundleID];
+        return [icon performSelector:@selector(applicationBundleID)];
 }
 
 %hook SBIconModel
