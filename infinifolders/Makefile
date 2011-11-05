@@ -1,6 +1,7 @@
-GO_EASY_ON_ME=1
+export GO_EASY_ON_ME=1
+export TARGET_IPHONEOS_DEPLOYMENT_VERSION=3.0
+
 TWEAK_NAME = Infinifolders
-OPTFLAG = -O1
 Infinifolders_OBJCC_FILES = Infinifolders.xmi infinishared/Infinishared.xmi
 Infinifolders_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 
