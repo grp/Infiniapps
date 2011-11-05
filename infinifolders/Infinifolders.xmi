@@ -73,7 +73,7 @@ __attribute__((constructor)) static void infinifolders_init() {
 
     NSLog(@"Welcome to Infinifolders.");
 
-    IFPreferencesInitialize(@"com.chpwn.infinifolders");
+    IFPreferencesInitialize(@"com.chpwn.infinifolders", IFPreferencesApply);
 
     dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
     [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infinifolders"];
