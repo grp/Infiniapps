@@ -18,6 +18,10 @@
 #define IFMacroQuote_(x) #x
 #define IFMacroQuote(x) IFMacroQuote_(x)
 #define $IFIconList objc_getClass(IFMacroQuote(IFIconList))
+
+#ifndef IFUseGridlock
+    #define IFUseGridlock NO
+#endif
 /* }}} */
 /* Global variables and flags {{{ */
 
@@ -25,8 +29,6 @@ static NSMutableArray *listies = nil;
 static NSMutableArray *scrollies = nil;
 
 static int disableRowsFlag = 0;
-static int disableOriginFlag = 0;
-static int disableResizeFlag = 0;
 
 /* }}} */
 /* Prototypes {{{ */
@@ -138,7 +140,7 @@ static CGSize IFIconViewDefaultSize() {
 static void IFIconListFirstFreeSlot(IFIconList *iconList, int *xptr, int *yptr) {
     int x, y;
 
-    if ([iconList respondsToSelector:@selector(gridlockLastIconX:Y:)]) {
+    if (IFUseGridlock && [iconList respondsToSelector:@selector(gridlockLastIconX:Y:)]) {
         [iconList gridlockLastIconX:&x Y:&y];
 
         if (x == MAX_ICON_COLUMNS(iconList) - 1) {
@@ -276,9 +278,6 @@ static BOOL IFIconListIsValid(id iconList) {
 }
 
 static void IFFixListHeights() {
-    if (disableResizeFlag)
-        return;
-
     for (int i = 0; i < IFMinimum([listies count], [scrollies count]); i++) {
         IFIconList *iconList = [listies objectAtIndex:i];
         IFIconListFixHeight(iconList);
@@ -406,8 +405,7 @@ static void IFPreferencesApply() {
 }
 
 - (void)didAddSubview:(UIView *)subview {
-    if (IFIconListIsValid(self) && [subview isKindOfClass:IFIconViewClass()]) {
-        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
+    if (IFIconListIsValid(self) && [subview isKindOfClass:IFIconViewClass()]) { UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
         [scrollView addSubview:subview];
     } else {
         %orig;
@@ -449,7 +447,7 @@ static void IFPreferencesApply() {
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
     if (cache_ready(self)) return cache_point(self, x, y);
 
-    if (IFIconListIsValid(self) && !disableOriginFlag) {
+    if (IFIconListIsValid(self)) {
         disableRowsFlag += 1;
         CGPoint ret;
         UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
@@ -537,7 +535,37 @@ static void IFPreferencesApply() {
 
 %end
 
+static CGFloat folderDropAdjustRect = 0;
+
+%hook SBIconView
+
+- (void)setIconPosition:(CGPoint)position {
+    if (folderDropAdjustRect) {
+        CGPoint p2 = position;
+        p2.y += folderDropAdjustRect;
+        %orig(p2);
+    } else {
+        %orig;
+    }
+}
+
+%end
+
 %hook SBIconController
+
+- (void)dropIconIntoOpenFolder:(id)icon {
+    IFIconList *iconList = MSHookIvar<IFIconList *>(self, "_destinationIconList");
+
+    if (IFIconListIsValid(iconList)) {
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:iconList]];
+
+        folderDropAdjustRect = [scrollView contentOffset].y;
+        %orig;
+        folderDropAdjustRect = 0;
+    } else {
+        %orig;
+    }
+}
 
 - (void)moveIconFromWindow:(id)icon toIconList:(IFIconList *)iconList {
     if (IFIconListIsValid(iconList)) {

@@ -2,6 +2,7 @@
 /* Configuration {{{ */
 #define IFIconList SBFolderIconListView
 #define IFBottomPadding (IFDeviceIsPad() ? (UIInterfaceOrientationIsLandscape(IFDeviceCurrentInterfaceOrientation()) ? -8.0f : -13.0f) : 3.0f)
+#define IFUseGridlock NO
 /* }}} */
 
 #import <infinishared/Infinilist.h>
