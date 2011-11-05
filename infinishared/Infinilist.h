@@ -44,6 +44,7 @@ static int disableRowsFlag = 0;
 
 @interface SBIconController : NSObject { }
 + (SBIconController *)sharedInstance;
+- (id)grabbedIcon;
 - (UIInterfaceOrientation)orientation;
 - (BOOL)isEditing;
 @end
@@ -400,8 +401,6 @@ static void IFPreferencesApply() {
 
         IFFixListHeights();
     }
-
-    IFFixListHeights();
 }
 
 - (void)didAddSubview:(UIView *)subview {
@@ -535,15 +534,18 @@ static void IFPreferencesApply() {
 
 %end
 
-static CGFloat folderDropAdjustRect = 0;
+// FIXME: Find a less hackish way to do this.
+static BOOL inSetGrabbedIcon = NO;
+static id currentOpenFolder = nil;
+static id grabbedIcon = nil;
 
-%hook SBIconView
+%hook UIScrollView
 
-- (void)setIconPosition:(CGPoint)position {
-    if (folderDropAdjustRect) {
-        CGPoint p2 = position;
-        p2.y += folderDropAdjustRect;
-        %orig(p2);
+// FIXME: this is an ugly hack
+- (void)setContentOffset:(CGPoint)offset {
+    if ([scrollies containsObject:self] && grabbedIcon != nil) {
+        // Prevent weird auto-scrolling behavior while dragging icons.
+        return;
     } else {
         %orig;
     }
@@ -553,18 +555,30 @@ static CGFloat folderDropAdjustRect = 0;
 
 %hook SBIconController
 
-- (void)dropIconIntoOpenFolder:(id)icon {
-    IFIconList *iconList = MSHookIvar<IFIconList *>(self, "_destinationIconList");
-
-    if (IFIconListIsValid(iconList)) {
-        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:iconList]];
-
-        folderDropAdjustRect = [scrollView contentOffset].y;
-        %orig;
-        folderDropAdjustRect = 0;
-    } else {
-        %orig;
+- (BOOL)hasAnimatingFolder {
+    BOOL ret = %orig;
+    if (inSetGrabbedIcon && !ret) {
+        id _closingFolder = MSHookIvar<id>(self, "_closingFolder");
+        if (_closingFolder == nil) {
+            // Temporarily set _openFolder to nil so that _dropIconInDestinationHole:
+            // gets called instead of dropIconIntoOpenFolder:
+            id &_openFolder = MSHookIvar<id>(self, "_openFolder");
+            currentOpenFolder = _openFolder;
+            _openFolder = nil;
+        }
     }
+    return ret;
+}
+
+- (void)_dropIconInDestinationHole:(id)icon {
+    if (currentOpenFolder != nil) {
+        // Restore _openFolder (for above hack for dropping icons)
+        id &_openFolder = MSHookIvar<id>(self, "_openFolder");
+        _openFolder = currentOpenFolder;
+        currentOpenFolder = nil;
+    }
+
+    %orig;
 }
 
 - (void)moveIconFromWindow:(id)icon toIconList:(IFIconList *)iconList {
@@ -585,9 +599,14 @@ static CGFloat folderDropAdjustRect = 0;
         [scrollView setScrollEnabled:(icon == nil)];
     }
 
+    inSetGrabbedIcon = YES;
     %orig;
+    inSetGrabbedIcon = NO;
 
-    if (icon == nil) IFFixListHeights();
+    if (icon != nil) grabbedIcon = icon;
+    else dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_current_queue(), ^{
+        grabbedIcon = nil;
+    });
 }
 
 - (void)setIsEditing:(BOOL)editing {
