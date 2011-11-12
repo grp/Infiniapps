@@ -7,9 +7,60 @@
 
 #import <infinishared/Infinilist.h>
 
+/* Prototypes {{{ */
+
+@interface SBFolderIcon : NSObject {
+}
+
+- (int)_numberOfExcessIcons;
+- (int)_maxIcons;
+- (int)_gridColumns;
+- (id)_miniIconGridWithSkipping:(BOOL)skipping;
+- (id)folder;
+
+@end
+
+/* }}} */
 /* IFInfinifolders {{{ */
 
 %group IFInfinifolders
+
+%hook SBFolderIcon
+
+- (unsigned int)_numberOfExcessIcons {
+    // XXX: This is a lie (maxIcons % 3 != 0).
+    return 0;
+}
+
+static int disableMaxFlag = 0;
+
+- (unsigned int)_maxIcons {
+    if (disableMaxFlag > 0) {
+        // Tihs fixes a speed issue on iOS 5 with too
+        // large of an image backing the folder icons.
+        int icons = [[[[[self folder] lists] lastObject] icons] count];
+        icons += [self _gridColumns];
+
+        disableRowsFlag += 1;
+        int orig = %orig;
+        disableRowsFlag -= 1;
+
+        if (icons < orig) icons = orig;
+
+        return icons;
+    } else {
+        return %orig;
+    }
+}
+
+- (id)_miniIconGridWithSkipping:(BOOL)skipping {
+    disableMaxFlag += 1;
+    id orig = %orig;
+    disableMaxFlag -= 1;
+    return orig;
+}
+
+%end
 
 %hook SBFolder
 
@@ -19,22 +70,11 @@
 
 %end
 
-%hook SBFolderIconListModel
-
-+ (int)maxIcons {
-    if (disableRowsFlag)
-        return %orig;
-
-    return 50 * [$IFIconList iconColumnsForInterfaceOrientation:IFDeviceCurrentInterfaceOrientation()];
-}
-
-%end
-
 %hook SBIconController
 
 - (void)_openCloseFolderAnimationEnded:(id)ended finished:(id)finished context:(void *)context {
     // XXX: this is a hack. flashes scroll indicators for Infinifolders folders when opened.
-    if ([scrollies count]) [[scrollies objectAtIndex:0] flashScrollIndicators];
+    if ([scrollies count] > 0) [[scrollies objectAtIndex:0] flashScrollIndicators];
     %orig;
 }
 

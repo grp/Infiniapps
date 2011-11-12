@@ -343,13 +343,6 @@ static void IFPreferencesApply() {
 
 %hook IFIconList
 
-+ (int)maxIcons {
-    if (disableRowsFlag)
-        return %orig;
-
-    return 50 * [$IFIconList iconColumnsForInterfaceOrientation:IFDeviceCurrentInterfaceOrientation()];
-}
-
 - (id)initWithFrame:(CGRect)frame {
     self = %orig;
 
@@ -432,17 +425,6 @@ static void IFPreferencesApply() {
     IFFixListHeights();
 }
 
-- (void)removeAllIcons {
-    %orig;
-
-    if (IFIconListIsValid(self)) {
-        for (id iconList in listies) {
-            // Huh? Why does this make the whole icon list blank?
-            // [[iconList icons] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        }
-    }
-}
-
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
     if (cache_ready(self)) return cache_point(self, x, y);
 
@@ -474,7 +456,7 @@ static void IFPreferencesApply() {
 }
 
 + (int)iconRowsForInterfaceOrientation:(int)interfaceOrientation {
-    if (disableRowsFlag)
+    if (disableRowsFlag || self != $IFIconList)
         return %orig;
 
     return 50;
@@ -534,16 +516,12 @@ static void IFPreferencesApply() {
 
 %end
 
-// FIXME: Find a less hackish way to do this.
-static BOOL inSetGrabbedIcon = NO;
-static id currentOpenFolder = nil;
-static id grabbedIcon = nil;
-
 %hook UIScrollView
 
 // FIXME: this is an ugly hack
+static id grabbedIcon = nil;
 - (void)setContentOffset:(CGPoint)offset {
-    if ([scrollies containsObject:self] && grabbedIcon != nil) {
+    if (grabbedIcon != nil && [scrollies containsObject:self]) {
         // Prevent weird auto-scrolling behavior while dragging icons.
         return;
     } else {
@@ -555,6 +533,9 @@ static id grabbedIcon = nil;
 
 %hook SBIconController
 
+// FIXME: Find a less hackish way to do this.
+static BOOL inSetGrabbedIcon = NO;
+static id currentOpenFolder = nil;
 - (BOOL)hasAnimatingFolder {
     BOOL ret = %orig;
     if (inSetGrabbedIcon && !ret) {
@@ -567,12 +548,13 @@ static id grabbedIcon = nil;
             _openFolder = nil;
         }
     }
+
     return ret;
 }
 
 - (void)_dropIconInDestinationHole:(id)icon {
     if (currentOpenFolder != nil) {
-        // Restore _openFolder (for above hack for dropping icons)
+        // Restore _openFolder after removed in -hasAnimatingFolder
         id &_openFolder = MSHookIvar<id>(self, "_openFolder");
         _openFolder = currentOpenFolder;
         currentOpenFolder = nil;
