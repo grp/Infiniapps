@@ -6,5 +6,5 @@ Infiniboard_OBJCC_FILES = Infiniboard.xmi infinishared/Infinishared.xmi
 Infiniboard_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 Infiniboard_LDFLAGS = -llockdown
 
-include framework/makefiles/common.mk
-include framework/makefiles/tweak.mk
+include theos/makefiles/common.mk
+include theos/makefiles/tweak.mk
