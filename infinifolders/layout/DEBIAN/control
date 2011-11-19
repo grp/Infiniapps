@@ -5,12 +5,9 @@ Package: com.chpwn.infinifolders
 Section: Tweaks
 Pre-Depends: firmware (>= 4.0)
 Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport
-Version: 1.4.1
+Version: 1.4.2
 Architecture: iphoneos-arm
 Description: Scroll your folders and break the 12 icon barrier!
- Infinifolders lets you add as many icons as you want to each folder, breaking the 12-app limit, and access them through a flick up and down.
- Many settings provide full customization (no respring required!) - and safe mode/iTunes don't mess up your icons.
- Created by the developer of Infinidock and Infiniboard, Infinifolders is the ultimate way to manage your icons!
 Depiction: http://chpwn.com/cydia/infinifolders.html
 Homepage: http://chpwn.com/cydia/infinifolders.html
 Icon: file:///Library/PreferenceLoader/Preferences/Infinifolders.png

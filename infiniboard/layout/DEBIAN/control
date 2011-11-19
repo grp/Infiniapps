@@ -5,13 +5,9 @@ Package: com.chpwn.infiniboard
 Section: Tweaks
 Pre-Depends: firmware (>= 3.0)
 Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport (>= 1.6)
-Version: 1.7.5
+Version: 1.8.0
 Architecture: iphoneos-arm
 Description: Vertically scroll your home screen pages!
- Fully iPad, iPhone, and iPod touch compatible.
- Infiniboard lets you add as many icons as you want to each page, and access them through a flick up and down.
- Many settings provide full customization - and resprings don't mess up your icons.
- Created by the developer of Infinidock, Infiniboard is the ultimate way to manage your icons!
 Depiction: http://chpwn.com/cydia/infiniboard.html
 Homepage: http://chpwn.com/cydia/infiniboard.html
 Sponsor: thebigboss.org <http://thebigboss.org>
