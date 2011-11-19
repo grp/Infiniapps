@@ -134,21 +134,19 @@ static CGSize IFIconViewDefaultSize() {
 /* }}} */
 /* IFIconList {{{ */
 
-#define MAX_ICON_ROWS(list) ([$IFIconList iconRowsForInterfaceOrientation:IFDeviceCurrentInterfaceOrientation()])
-#define MAX_ICON_COLUMNS(list) ([$IFIconList iconColumnsForInterfaceOrientation:IFDeviceCurrentInterfaceOrientation()])
-#define DEFAULT_ROWS_FOR_ORIENTATION(o) (!(IFDeviceIsPad()) ? (UIInterfaceOrientationIsLandscape(o) ? 2 : 3) : (UIInterfaceOrientationIsLandscape(o) ? 4 : 5))
+#define MAX_ICON_ROWS ([$IFIconList iconRowsForInterfaceOrientation:IFDeviceCurrentInterfaceOrientation()])
+#define MAX_ICON_COLUMNS ([$IFIconList iconColumnsForInterfaceOrientation:IFDeviceCurrentInterfaceOrientation()])
 
 static void IFIconListFirstFreeSlot(IFIconList *iconList, int *xptr, int *yptr) {
-    int x, y;
+    int x = 0, y = 0;
 
     if (IFUseGridlock && [iconList respondsToSelector:@selector(gridlockLastIconX:Y:)]) {
         [iconList gridlockLastIconX:&x Y:&y];
 
-        if (x == MAX_ICON_COLUMNS(iconList) - 1) {
+        x += 1;
+        if (x == MAX_ICON_COLUMNS) {
             x = 0;
             y += 1;
-        } else {
-            x += 1;
         }
     } else {
         if ([iconList respondsToSelector:@selector(firstFreeSlotX:Y:)]) {
@@ -165,29 +163,17 @@ static void IFIconListFirstFreeSlot(IFIconList *iconList, int *xptr, int *yptr) 
 
     *xptr = x;
     *yptr = y;
-/*
-    if ([iconList respondsToSelector:@selector(firstFreeSlotX:Y:)]) {
-        [iconList firstFreeSlotX:x Y:y];
-    } else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex:)]) {
-        int idx;
-        [iconList firstFreeSlotIndex:&idx];
-        [iconList getX:x Y:y forIndex:idx forOrientation:IFDeviceCurrentInterfaceOrientation()];
-    } else if ([iconList respondsToSelector:@selector(firstFreeSlotIndex)]) {
-        int idx = [iconList firstFreeSlotIndex];
-        [iconList getX:x Y:y forIndex:idx forOrientation:IFDeviceCurrentInterfaceOrientation()];
-    }
-*/
 }
 
 static void IFIconListLastIconPosition(IFIconList *iconList, int *xptr, int *yptr) {
-    int x, y;
+    int x = 0, y = 0;
 
     IFIconListFirstFreeSlot(iconList, &x, &y);
 
     // We want the /last/ icon, not the next free one
     if (x == 0) {
         y -= 1;
-        x = MAX_ICON_COLUMNS(iconList);
+        x = MAX_ICON_COLUMNS;
     } else {
         x -= 1;
     }
@@ -198,7 +184,7 @@ static void IFIconListLastIconPosition(IFIconList *iconList, int *xptr, int *ypt
 
 static int IFIconListDefaultRows(IFIconList *iconList) {
     disableRowsFlag += 1;
-    int ret = MAX_ICON_ROWS(iconList);
+    int ret = MAX_ICON_ROWS;
     disableRowsFlag -= 1;
 
     return ret;
@@ -213,8 +199,8 @@ static void IFIconListFixHeight(IFIconList *iconList) {
         // Hack for SBRotator's fail.
         CGRect listFrame = [iconList bounds];
         int icons = [[iconList icons] count];
-        int rows = icons / MAX_ICON_COLUMNS(iconList);
-        if (icons % MAX_ICON_COLUMNS(iconList)) rows += 1;
+        int rows = icons / MAX_ICON_COLUMNS;
+        if (icons % MAX_ICON_COLUMNS) rows += 1;
         listFrame.size.height = rows * (iconHeight + [iconList verticalIconPadding]);
         [scrollView setFrame:listFrame];
     } else {
@@ -230,7 +216,7 @@ static void IFIconListFixHeight(IFIconList *iconList) {
     CGPoint farthestOffset;
     oldSize = [scrollView contentSize];
 
-    int x, y;
+    int x = 0, y = 0;
     if (![IFIconControllerSharedInstance() isEditing])
         IFIconListLastIconPosition(iconList, &x, &y);
     else
@@ -240,7 +226,8 @@ static void IFIconListFixHeight(IFIconList *iconList) {
         farthestOffset = [iconList originForIconAtX:x Y:y];
 
         if ([scrollView frame].size.height < farthestOffset.y) {
-            newSize = CGSizeMake(scrollView.frame.size.width, farthestOffset.y + [scrollView frame].size.height - [iconList originForIconAtX:0 Y:(DEFAULT_ROWS_FOR_ORIENTATION(IFDeviceCurrentInterfaceOrientation())) - 1].y);
+            CGFloat bottomPaddingIncludingLastIcon = ([scrollView frame].size.height - [iconList originForIconAtX:0 Y:(IFDefaultRowsForOrientation(IFDeviceCurrentInterfaceOrientation())) - 1].y);
+            newSize = CGSizeMake(scrollView.frame.size.width, farthestOffset.y + bottomPaddingIncludingLastIcon);
         } else {
             newSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height);
         }
@@ -362,7 +349,7 @@ static void IFPreferencesApply() {
         [self setFrame:frame];
 
         IFPreferencesApply();
-        cache_init(self, MAX_ICON_ROWS(self), MAX_ICON_COLUMNS(self));
+        cache_init(self, MAX_ICON_ROWS, MAX_ICON_COLUMNS);
     }
 
     return self;
@@ -409,20 +396,26 @@ static void IFPreferencesApply() {
 - (void)_didRemoveSubview:(id)subview {
     %orig;
 
-    IFFixListHeights();
+    if (IFIconListIsValid(self)) {
+        IFFixListHeights();
+    }
 }
 
 - (void)setOrientation:(int)orientation {
     %orig;
 
-    IFFixListHeights();
+    if (IFIconListIsValid(self)) {
+        IFFixListHeights();
+    }
 }
 
 - (void)cleanupAfterRotation {
     %orig;
 
-    [self layoutIconsNow];
-    IFFixListHeights();
+    if (IFIconListIsValid(self)) {
+        [self layoutIconsNow];
+        IFFixListHeights();
+    }
 }
 
 - (CGPoint)originForIconAtX:(int)x Y:(int)y {
@@ -488,8 +481,9 @@ static void IFPreferencesApply() {
 - (NSArray *)icons {
     NSArray *icons = %orig;
 
-    if (IFIconListIsValid(self))
-        icons = [icons subarrayWithRange:NSMakeRange(0, IFMinimum(MAX_ICON_ROWS(self) * MAX_ICON_COLUMNS(self), [icons count]))];
+    if (IFIconListIsValid(self)) {
+        icons = [icons subarrayWithRange:NSMakeRange(0, IFMinimum(MAX_ICON_ROWS * MAX_ICON_COLUMNS, [icons count]))];
+    }
 
     return icons;
 }

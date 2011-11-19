@@ -2,6 +2,7 @@
 /* Configuration {{{ */
 #define IFIconList SBFolderIconListView
 #define IFBottomPadding (IFDeviceIsPad() ? (UIInterfaceOrientationIsLandscape(IFDeviceCurrentInterfaceOrientation()) ? -8.0f : -13.0f) : 3.0f)
+#define IFDefaultRowsForOrientation(o) ((IFDeviceIsPad()) ? (UIInterfaceOrientationIsLandscape(o) ? 4 : 5) : (UIInterfaceOrientationIsLandscape(o) ? 2 : 3))
 #define IFUseGridlock NO
 /* }}} */
 

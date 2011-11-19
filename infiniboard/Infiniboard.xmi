@@ -1,6 +1,8 @@
 
 /* Configuration {{{ */
 #define IFIconList SBIconListView
+#define IFDefaultRowsForOrientation(o) ((IFDeviceIsPad()) ? (UIInterfaceOrientationIsLandscape(o) ? 4 : 5) : (UIInterfaceOrientationIsLandscape(o) ? 3 : 4))
+#define IFUseGridlock YES
 #define IFBottomPadding 0
 /* }}} */
 
@@ -22,7 +24,74 @@ static void IFRestoreIconLists() {
     }
 }
 
+static int disableRowsGhostlyFlag = 0;
+
+%hook IFIconList
+
+- (int)rowForIcon:(id)icon {
+    int ret = %orig;
+
+    if (disableRowsFlag) {
+        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
+        CGPoint o = [IFIconViewForIcon(icon) frame].origin;
+        o.y -= [scrollView contentOffset].y;
+        ret = (int)[self rowAtPoint:o];
+    }
+
+    return ret;
+}
+
+%end
+
 %hook SBIconController
+
+- (CGRect)_contentViewRelativeFrameForIcon:(id)icon {
+    IFIconList *list = [self currentRootIconList];
+    UIScrollView *scroll = [scrollies objectAtIndex:[listies indexOfObject:list]];
+
+    CGRect ret = %orig;
+    if (![IFIconViewForIcon(icon) isInDock]) ret.origin.y -= [scroll contentOffset].y;
+    return ret;
+}
+
+- (void)setOpenFolder:(id)folder {
+    %orig;
+
+    if (folder == nil) return;
+
+    id icon = IFIconViewForIcon([[self openFolder] icon]);
+    IFIconList *list = [self currentRootIconList];
+    UIScrollView *scroll = [scrollies objectAtIndex:[listies indexOfObject:list]];
+
+    if (![icon isInDock]) {
+        [scroll scrollRectToVisible:[icon frame] animated:NO];
+    } else {
+        id icon = [list iconAtPoint:CGPointMake(0, [list bounds].size.height) index:NULL];
+        if (icon != nil) [scroll scrollRectToVisible:[icon frame] animated:NO];
+    }
+}
+
+- (void)setCurrentPageIconsGhostly:(BOOL)ghostly forRequester:(int)requester skipIcon:(id)icon {
+    if (disableRowsGhostlyFlag) {
+        disableRowsFlag -= 1;
+        %orig;
+        disableRowsFlag += 1;
+    } else {
+        %orig;
+    }
+}
+
+- (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
+    disableRowsFlag += 1;
+    disableRowsGhostlyFlag += 1;
+
+    // We disable the rows here so that the folder can slide SpringBoard "upwards" if necessary.
+    %orig;
+
+    disableRowsGhostlyFlag -= 1;
+    disableRowsFlag -= 1;
+}
+
 
 - (void)scrollViewDidEndDecelerating:(id)scrollView {
     if (IFPreferencesBoolForKey(@"FastRestoreEnabled", NO)) {
@@ -68,9 +137,20 @@ __attribute__((constructor)) static void infiniboard_init() {
     if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
         return;
 
-    NSLog(@"Welcome to Infiniboard.");
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/SixRows.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/7x7SpringBoard.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/CategoriesSB.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FCSB.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/Iconoclasm.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRows.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart1.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart2.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/FiveIRowsPart3.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/OverBoard.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/LockInfo.dylib", RTLD_LAZY);
 
-    IFPreferencesInitialize(@"com.chpwn.infiniboard");
+    NSLog(@"Welcome to Infiniboard.");
+    IFPreferencesInitialize(@"com.chpwn.infiniboard", IFPreferencesApply);
 
     dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
     [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infiniboard"];
