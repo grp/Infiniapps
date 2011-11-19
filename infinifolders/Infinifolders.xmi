@@ -87,17 +87,17 @@ typedef struct { int direction; CGRect rect; } SBNotchInfo;
 
 - (id)initWithRows:(int)rows notchInfo:(SBNotchInfo)notchInfo {
     IFFixListHeights();
-    return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION(IFDeviceCurrentInterfaceOrientation())), notchInfo);
+    return %orig(MIN(rows, IFDefaultRowsForOrientation(IFDeviceCurrentInterfaceOrientation())), notchInfo);
 }
 
 - (id)initWithRows:(int)rows notchInfo:(SBNotchInfo)notchInfo orientation:(int)orientation {
     IFFixListHeights();
-    return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION(orientation)), notchInfo, orientation);
+    return %orig(MIN(rows, IFDefaultRowsForOrientation(orientation)), notchInfo, orientation);
 }
 
 - (void)setRows:(int)rows notchInfo:(SBNotchInfo)notchInfo orientation:(int)orientation {
     IFFixListHeights();
-    return %orig(MIN(rows, DEFAULT_ROWS_FOR_ORIENTATION(orientation)), notchInfo, orientation);
+    return %orig(MIN(rows, IFDefaultRowsForOrientation(orientation)), notchInfo, orientation);
 }
 
 %end
