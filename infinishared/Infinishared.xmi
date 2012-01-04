@@ -29,7 +29,7 @@
 
 static UIView *iconViewWithIdentifier(NSString *identifier) {
     UIView *icon = nil;
-    SBIconModel *iconModel = [$SBIconModel sharedInstance];
+    SBIconModel *iconModel = [objc_getClass("SBIconModel") sharedInstance];
 
     if ([iconModel respondsToSelector:@selector(leafIconForIdentifier:)])
         icon = [iconModel leafIconForIdentifier:identifier];

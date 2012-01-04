@@ -41,6 +41,11 @@ static int disableRowsGhostlyFlag = 0;
     return ret;
 }
 
+%new(i@:)
+- (int)infiniboardDefaultRows {
+    return IFIconListDefaultRows(self);
+}
+
 %end
 
 %hook SBIconController
