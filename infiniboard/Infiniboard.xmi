@@ -71,7 +71,10 @@ static int disableRowsGhostlyFlag = 0;
     if (![icon isInDock]) {
         [scroll scrollRectToVisible:[icon frame] animated:NO];
     } else {
-        id icon = [list iconAtPoint:CGPointMake(0, [list bounds].size.height) index:NULL];
+        // Get last icon on current page; scroll that icon to visible.
+        // (This fixes visual issues when icons are partially scrolled
+        // between rows and a folder is opened when it's in the dock.)
+        id icon = IFIconViewForIcon([list iconAtPoint:CGPointMake(0, [list bounds].size.height) index:NULL]);
         if (icon != nil) [scroll scrollRectToVisible:[icon frame] animated:NO];
     }
 }
