@@ -1,0 +1,6 @@
+infini*/_/*
+infini*/obj/*
+*/.theos/*
+*/theos
+*.deb
+*.o
