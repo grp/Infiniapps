@@ -6,14 +6,36 @@
 #import <QuartzCore/QuartzCore.h>
 #import <CoreGraphics/CoreGraphics.h>
 
-#import <SpringBoard/SpringBoard.h>
-#import <SpringBoard/SBDownloadingIcon.h>
-#import <SpringBoard/SBDestinationHole.h>
 #import <dlfcn.h>
 
 #import <objc/runtime.h>
 #import <objc/message.h>
 
+@interface SBIcon : NSObject { }
++ (CGSize)defaultIconSize;
+@end
+
+@interface SBDownloadingIcon : SBIcon { }
+@end
+
+@interface SBDestinationHole : SBIcon { }
+@end
+
+@interface SBApplicationIcon : SBIcon { }
+@end
+
+@interface SBIconView : UIView { }
++ (CGSize)defaultIconSize;
+@end
+
+@interface SBIconList : NSObject { }
+- (CGPoint)originForIconAtX:(int)x Y:(int)y;
+- (CGFloat)horizontalIconInset;
+- (NSArray *)icons;
+@end
+
+@interface SBButtonBar : SBIconList { }
+@end
 
 /* Preferences */
 

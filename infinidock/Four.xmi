@@ -87,7 +87,7 @@ static BOOL is42;
     return %orig;
 }
 - (int)iconsInRowForSpacingCalculation {
-    if (!disableVisibleFlag || (is42 && [[IFBase sharedInstance] currentIconCount] >= [[IFBase sharedInstance]selectedIconCount])) {
+    if (!disableVisibleFlag || (is42 && [[IFBase sharedInstance] currentIconCount] >= [[IFBase sharedInstance] selectedIconCount])) {
         return [[IFBase sharedInstance] visibleCount];
     }
 
@@ -217,7 +217,7 @@ static BOOL is42;
 __attribute__((constructor)) static void four_init() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"] || [IFFirmwareVersion() hasPrefix:@"5.0"]) {
+    if ([IFFirmwareVersion() hasPrefix:@"4.0"] || [IFFirmwareVersion() hasPrefix:@"4.1"] || [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"] || [IFFirmwareVersion() hasPrefix:@"5.0"] || [IFFirmwareVersion() hasPrefix:@"5.1"]) {
         is42 = [IFFirmwareVersion() hasPrefix:@"4.2"] || [IFFirmwareVersion() hasPrefix:@"4.3"] || [IFFirmwareVersion() hasPrefix:@"5"];
         %init(Four);
         [IFBase setClass:[IFFour class]];
