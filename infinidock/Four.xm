@@ -147,10 +147,6 @@ static BOOL is42;
         [[[IFBase sharedInstance] scrollView] addSubview:subview];
     }
 }
-- (void)removeAllIcons {
-    %orig;
-    [[[[IFBase sharedInstance] dock] icons] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-}
 - (void)setFrame:(CGRect)frame {
     %orig;
     [[IFBase sharedInstance] applyPreferences];
