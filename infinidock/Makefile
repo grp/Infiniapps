@@ -1,5 +1,6 @@
 export GO_EASY_ON_ME=1
 export TARGET_IPHONEOS_DEPLOYMENT_VERSION=3.0
+export ARCHS=armv7
 
 TWEAK_NAME = Infinidock
 OPTFLAG = -O1
