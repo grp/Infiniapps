@@ -160,40 +160,46 @@ typedef enum {
 #define IFPreferencesScrollbarStyle @"ScrollbarStyle", kIFScrollbarStyleBlack
 #define IFPreferencesClipsToBounds @"ClipsToBounds", YES
 
+static void IFPreferencesApplyToList(SBIconListView *listView) {
+    UIScrollView *scrollView = IFListsScrollViewForListView(listView);
+
+    BOOL scroll = IFPreferencesBoolForKey(IFPreferencesScrollEnabled);
+    IFScrollBounce bounce = (IFScrollBounce) IFPreferencesIntForKey(IFPreferencesScrollBounce);
+    IFScrollbarStyle bar = (IFScrollbarStyle) IFPreferencesIntForKey(IFPreferencesScrollbarStyle);
+    BOOL page = IFPreferencesBoolForKey(IFPreferencesPagingEnabled);
+    BOOL clips = IFPreferencesBoolForKey(IFPreferencesClipsToBounds);
+
+    [scrollView setShowsVerticalScrollIndicator:YES];
+    if (bar == kIFScrollbarStyleBlack)
+        [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleDefault];
+    else if (bar == kIFScrollbarStyleWhite)
+        [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleWhite];
+    else if (bar == kIFScrollbarStyleNone)
+        [scrollView setShowsVerticalScrollIndicator:NO];
+
+    [scrollView setScrollEnabled:scroll];
+    [scrollView setAlwaysBounceVertical:bounce == kIFScrollBounceEnabled];
+    [scrollView setBounces:bounce != kIFScrollBounceDisabled];
+    [scrollView setPagingEnabled:page];
+    [scrollView setClipsToBounds:clips];
+    [listView setClipsToBounds:clips];
+
+    if (bounce == kIFScrollBounceExtra) {
+        NSUInteger idx = 0;
+        NSUInteger max = 0;
+
+        IFFlag(IFFlagDefaultDimensions) {
+            idx = IFIconListLastIconIndex(listView);
+            max = [listView iconRowsForCurrentOrientation] * [listView iconColumnsForCurrentOrientation];
+        }
+
+        [scrollView setAlwaysBounceVertical:(idx > max)];
+    }
+}
+
 static void IFPreferencesApply() {
     IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
-        BOOL scroll = IFPreferencesBoolForKey(IFPreferencesScrollEnabled);
-        IFScrollBounce bounce = (IFScrollBounce) IFPreferencesIntForKey(IFPreferencesScrollBounce);
-        IFScrollbarStyle bar = (IFScrollbarStyle) IFPreferencesIntForKey(IFPreferencesScrollbarStyle);
-        BOOL page = IFPreferencesBoolForKey(IFPreferencesPagingEnabled);
-        BOOL clips = IFPreferencesBoolForKey(IFPreferencesClipsToBounds);
-
-        [scrollView setShowsVerticalScrollIndicator:YES];
-        if (bar == kIFScrollbarStyleBlack)
-            [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleDefault];
-        else if (bar == kIFScrollbarStyleWhite)
-            [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleWhite];
-        else if (bar == kIFScrollbarStyleNone)
-            [scrollView setShowsVerticalScrollIndicator:NO];
-
-        [scrollView setScrollEnabled:scroll];
-        [scrollView setAlwaysBounceVertical:bounce == kIFScrollBounceEnabled];
-        [scrollView setBounces:bounce != kIFScrollBounceDisabled];
-        [scrollView setPagingEnabled:page];
-        [scrollView setClipsToBounds:clips];
-        [listView setClipsToBounds:clips];
-
-        if (bounce == kIFScrollBounceExtra) {
-            NSUInteger idx = 0;
-            NSUInteger max = 0;
-
-            IFFlag(IFFlagDefaultDimensions) {
-                idx = IFIconListLastIconIndex(listView);
-                max = [listView iconRowsForCurrentOrientation] * [listView iconColumnsForCurrentOrientation];
-            }
-
-            [scrollView setAlwaysBounceVertical:(idx > max)];
-        }
+        IFPreferencesApplyToList(listView);
     });
 }
 
@@ -441,12 +447,12 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
             UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:frame];
             [scrollView setDelegate:(id<UIScrollViewDelegate>) self];
             [scrollView setDelaysContentTouches:NO];
-            [scrollView setClipsToBounds:NO];
 
             IFListsRegister(self, scrollView);
             [self addSubview:scrollView];
 
             IFIconListSizingUpdateIconList(self);
+            IFPreferencesApplyToList(self);
         }
     }
 

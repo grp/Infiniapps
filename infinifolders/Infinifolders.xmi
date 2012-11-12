@@ -1,17 +1,14 @@
 
 /* Configuration {{{ */
-#define IFIconList SBFolderIconListView
-#define IFBottomPadding (IFDeviceIsPad() ? (UIInterfaceOrientationIsLandscape(IFDeviceCurrentInterfaceOrientation()) ? -8.0f : -13.0f) : 3.0f)
-#define IFDefaultRowsForOrientation(o) ((IFDeviceIsPad()) ? (UIInterfaceOrientationIsLandscape(o) ? 4 : 5) : (UIInterfaceOrientationIsLandscape(o) ? 2 : 3))
-#define IFUseGridlock NO
+#define IFConfigurationListClass SBFolderIconListView
+#define IFConfigurationBottomPadding (IFDeviceIsPad() ? (UIInterfaceOrientationIsLandscape([IFIconControllerSharedInstance() orientation]) ? -8.0f : -13.0f) : 3.0f)
 /* }}} */
 
-#import <infinishared/Infinilist.h>
+#import "infinishared/Infinilist.h"
 
 /* Prototypes {{{ */
 
-@interface SBFolderIcon : NSObject {
-}
+@interface SBFolderIcon : NSObject
 
 - (int)_numberOfExcessIcons;
 - (int)_maxIcons;
@@ -21,7 +18,10 @@
 
 @end
 
+typedef struct { int direction; CGRect rect; } SBNotchInfo;
+
 /* }}} */
+
 /* IFInfinifolders {{{ */
 
 %group IFInfinifolders
@@ -29,22 +29,23 @@
 %hook SBFolderIcon
 
 - (unsigned int)_numberOfExcessIcons {
-    // XXX: This is a lie (maxIcons % 3 != 0).
+    // FIXME: This is a lie (maxIcons % 3 != 0).
     return 0;
 }
 
 static int disableMaxFlag = 0;
 
-- (unsigned int)_maxIcons {
+- (NSUInteger)_maxIcons {
     if (disableMaxFlag > 0) {
-        // Tihs fixes a speed issue on iOS 5 with too
-        // large of an image backing the folder icons.
-        int icons = [[[[[self folder] lists] lastObject] icons] count];
+        // Tihs fixes a speed issue on iOS 5 with too large of an image backing the folder icons.
+        NSUInteger icons = [[[[[self folder] lists] lastObject] icons] count];
         icons += [self _gridColumns];
 
-        disableRowsFlag += 1;
-        int orig = %orig;
-        disableRowsFlag -= 1;
+        NSUInteger orig = 0;
+
+        IFFlag(IFFlagDefaultDimensions) {
+            orig = %orig;
+        }
 
         if (icons < orig) icons = orig;
 
@@ -55,9 +56,12 @@ static int disableMaxFlag = 0;
 }
 
 - (id)_miniIconGridWithSkipping:(BOOL)skipping {
-    disableMaxFlag += 1;
-    id orig = %orig;
-    disableMaxFlag -= 1;
+    id orig = nil;
+
+    IFFlag(disableMaxFlag) {
+        orig = %orig;
+    }
+
     return orig;
 }
 
@@ -74,8 +78,8 @@ static int disableMaxFlag = 0;
 %hook SBIconController
 
 - (void)_openCloseFolderAnimationEnded:(id)ended finished:(id)finished context:(void *)context {
-    // XXX: this is a hack. flashes scroll indicators for Infinifolders folders when opened.
-    if ([scrollies count] > 0) [[scrollies objectAtIndex:0] flashScrollIndicators];
+    // FIXME: Find the open folder list view (and thus scroll view) in a better way than querying our arrays.
+    if ([IFListsScrollViews count] > 0) [[IFListsScrollViews objectAtIndex:0] flashScrollIndicators];
     %orig;
 }
 
@@ -83,21 +87,16 @@ static int disableMaxFlag = 0;
 
 %hook SBFolderView
 
-typedef struct { int direction; CGRect rect; } SBNotchInfo;
-
 - (id)initWithRows:(int)rows notchInfo:(SBNotchInfo)notchInfo {
-    IFFixListHeights();
-    return %orig(MIN(rows, IFDefaultRowsForOrientation(IFDeviceCurrentInterfaceOrientation())), notchInfo);
+    return %orig(MIN(rows, _IFSizingDefaultDimensionsForOrientation([IFIconControllerSharedInstance() orientation]).rows), notchInfo);
 }
 
 - (id)initWithRows:(int)rows notchInfo:(SBNotchInfo)notchInfo orientation:(int)orientation {
-    IFFixListHeights();
-    return %orig(MIN(rows, IFDefaultRowsForOrientation(orientation)), notchInfo, orientation);
+    return %orig(MIN(rows, _IFSizingDefaultDimensionsForOrientation(orientation).rows), notchInfo, orientation);
 }
 
 - (void)setRows:(int)rows notchInfo:(SBNotchInfo)notchInfo orientation:(int)orientation {
-    IFFixListHeights();
-    return %orig(MIN(rows, IFDefaultRowsForOrientation(orientation)), notchInfo, orientation);
+    return %orig(MIN(rows, _IFSizingDefaultDimensionsForOrientation(orientation).rows), notchInfo, orientation);
 }
 
 %end
@@ -105,27 +104,19 @@ typedef struct { int direction; CGRect rect; } SBNotchInfo;
 %end
 
 /* }}} */
+
 /* Constructor {{{ */
 
 __attribute__((constructor)) static void infinifolders_init() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
-        return;
-
-    NSLog(@"Welcome to Infinifolders.");
 
     IFPreferencesInitialize(@"com.chpwn.infinifolders", IFPreferencesApply);
 
     dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
     [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infinifolders"];
 
-    scrollies = [[NSMutableArray alloc] init];
-    listies = [[NSMutableArray alloc] init];
-
     %init(IFBasic);
     %init(IFInfinifolders);
-    infinishared_init();
 
     [pool release];
 }

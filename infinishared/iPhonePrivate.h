@@ -59,3 +59,6 @@
 - (void)layoutIconsNow;
 @end
 
+@interface SBFolderIconListView : SBIconListView
+@end
+
