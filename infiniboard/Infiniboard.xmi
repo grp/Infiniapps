@@ -1,61 +1,60 @@
 
-/* Configuration {{{ */
-#define IFIconList SBIconListView
-#define IFDefaultRowsForOrientation(o) ((IFDeviceIsPad()) ? (UIInterfaceOrientationIsLandscape(o) ? 4 : 5) : (UIInterfaceOrientationIsLandscape(o) ? 3 : 4))
-#define IFUseGridlock YES
-#define IFBottomPadding 0
-/* }}} */
+#import "infinishared/Infinilist.h"
+#import "infinishared/Preferences.h"
 
-#import <infinishared/Infinilist.h>
-#import <infinishared/Preferences.h>
+#define IFPreferencesRestoreEnabled @"RestoreEnabled", NO
 
-/* Infiniboard {{{ */
 %group IFInfiniboard
 
 static void IFRestoreIconLists() {
     IFPreferencesApply();
 
-    for (UIScrollView *scrollView in scrollies) {
-        if (IFPreferencesBoolForKey(@"RestoreEnabled", NO))
+    IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
+        if (IFPreferencesBoolForKey(IFPreferencesRestoreEnabled)) {
             [scrollView setContentOffset:CGPointZero animated:NO];
+        }
 
-        if (IFPreferencesIntForKey(@"ScrollbarStyle", 0) != kIFScrollbarStyleNone)
+        if (IFPreferencesIntForKey(IFPreferencesScrollbarStyle) != kIFScrollbarStyleNone) {
             [scrollView flashScrollIndicators];
-    }
+        }
+    });
 }
 
 static int disableRowsGhostlyFlag = 0;
 
-%hook IFIconList
+%hook IFConfigurationListClass
 
-- (int)rowForIcon:(id)icon {
-    int ret = %orig;
+- (NSUInteger)rowForIcon:(SBIcon *)icon {
+    SBIconView *iconView = IFIconViewForIcon(icon);
+    NSUInteger ret = %orig;
 
-    if (disableRowsFlag) {
-        UIScrollView *scrollView = [scrollies objectAtIndex:[listies indexOfObject:self]];
-        CGPoint o = [IFIconViewForIcon(icon) frame].origin;
-        o.y -= [scrollView contentOffset].y;
-        ret = (int)[self rowAtPoint:o];
+    if (IFFlagDefaultDimensions) {
+        UIScrollView *scrollView = IFListsScrollViewForListView(self);
+
+        CGPoint origin = [iconView frame].origin;
+        origin.y -= [scrollView contentOffset].y;
+        ret = [self rowAtPoint:origin];
     }
 
     return ret;
-}
-
-%new(i@:)
-- (int)infiniboardDefaultRows {
-    return IFIconListDefaultRows(self);
 }
 
 %end
 
 %hook SBIconController
 
-- (CGRect)_contentViewRelativeFrameForIcon:(id)icon {
-    IFIconList *list = [self currentRootIconList];
-    UIScrollView *scroll = [scrollies objectAtIndex:[listies indexOfObject:list]];
+- (CGRect)_contentViewRelativeFrameForIcon:(SBIcon *)icon {
+    SBIconView *iconView = IFIconViewForIcon(icon);
+    // FIXME: find the actual list that contains this icon
+    SBIconListView *listView = [self currentRootIconList];
+    UIScrollView *scrollView = IFListsScrollViewForListView(listView);
 
     CGRect ret = %orig;
-    if (![IFIconViewForIcon(icon) isInDock]) ret.origin.y -= [scroll contentOffset].y;
+
+    if (![iconView isInDock]) {
+        ret.origin.y -= [scrollView contentOffset].y;
+    }
+
     return ret;
 }
 
@@ -64,48 +63,51 @@ static int disableRowsGhostlyFlag = 0;
 
     if (folder == nil) return;
 
-    id icon = IFIconViewForIcon([[self openFolder] icon]);
-    IFIconList *list = [self currentRootIconList];
-    UIScrollView *scroll = [scrollies objectAtIndex:[listies indexOfObject:list]];
+    SBIconView *icon = IFIconViewForIcon([[self openFolder] icon]);
+
+    SBIconListView *listView = [self currentRootIconList];
+    UIScrollView *scrollView = IFListsScrollViewForListView(listView);
 
     if (![icon isInDock]) {
-        [scroll scrollRectToVisible:[icon frame] animated:NO];
+        [scrollView scrollRectToVisible:[icon frame] animated:NO];
     } else {
         // Get last icon on current page; scroll that icon to visible.
         // (This fixes visual issues when icons are partially scrolled
         // between rows and a folder is opened when it's in the dock.)
-        id icon = IFIconViewForIcon([list iconAtPoint:CGPointMake(0, [list bounds].size.height) index:NULL]);
-        if (icon != nil) [scroll scrollRectToVisible:[icon frame] animated:NO];
+        SBIconView *icon = IFIconViewForIcon([listView iconAtPoint:CGPointMake(0, [listView bounds].size.height) index:NULL]);
+        if (icon != nil) {
+            [scrollView scrollRectToVisible:[icon frame] animated:NO];
+        }
     }
 }
 
-- (void)setCurrentPageIconsGhostly:(BOOL)ghostly forRequester:(int)requester skipIcon:(id)icon {
+- (void)setCurrentPageIconsGhostly:(BOOL)ghostly forRequester:(int)requester skipIcon:(SBIconView *)icon {
     if (disableRowsGhostlyFlag) {
-        disableRowsFlag -= 1;
+        IFFlagDefaultDimensions -= 1;
         %orig;
-        disableRowsFlag += 1;
+        IFFlagDefaultDimensions += 1;
     } else {
         %orig;
     }
 }
 
 - (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
-    disableRowsFlag += 1;
+    IFFlagDefaultDimensions += 1;
     disableRowsGhostlyFlag += 1;
 
     // We disable the rows here so that the folder can slide SpringBoard "upwards" if necessary.
     %orig;
 
     disableRowsGhostlyFlag -= 1;
-    disableRowsFlag -= 1;
+    IFFlagDefaultDimensions -= 1;
 }
 
 
-- (void)scrollViewDidEndDecelerating:(id)scrollView {
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     if (IFPreferencesBoolForKey(@"FastRestoreEnabled", NO)) {
-        for (UIScrollView *scrollView in scrollies) {
+        IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
             [scrollView setContentOffset:CGPointZero animated:NO];
-        }
+        });
     }
 
     %orig;
@@ -119,14 +121,17 @@ static int disableRowsGhostlyFlag = 0;
     %orig;
     IFRestoreIconLists();
 }
+
 - (void)restoreIconListAnimated:(BOOL)animated {
     %orig;
     IFRestoreIconLists();
 }
+
 - (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)animateWallpaper {
     %orig;
     IFRestoreIconLists();
 }
+
 - (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher {
     %orig;
     IFRestoreIconLists();
@@ -136,15 +141,9 @@ static int disableRowsGhostlyFlag = 0;
 
 %end
 
-/* }}} */
 /* Constructor {{{ */
 
 __attribute__((constructor)) static void infiniboard_init() {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.springboard"])
-        return;
-
     dlopen("/Library/MobileSubstrate/DynamicLibraries/SixRows.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/7x7SpringBoard.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/CategoriesSB.dylib", RTLD_LAZY);
@@ -157,20 +156,13 @@ __attribute__((constructor)) static void infiniboard_init() {
     dlopen("/Library/MobileSubstrate/DynamicLibraries/OverBoard.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/LockInfo.dylib", RTLD_LAZY);
 
-    NSLog(@"Welcome to Infiniboard.");
     IFPreferencesInitialize(@"com.chpwn.infiniboard", IFPreferencesApply);
 
     dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
     [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infiniboard"];
 
-    scrollies = [[NSMutableArray alloc] init];
-    listies = [[NSMutableArray alloc] init];
-
     %init(IFBasic);
     %init(IFInfiniboard);
-    infinishared_init();
-
-    [pool release];
 }
 
 /* }}} */
