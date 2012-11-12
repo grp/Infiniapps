@@ -685,16 +685,6 @@ static id grabbedIcon = nil;
 
 %end
 
-%hook SBUIController
-
-- (void)finishLaunching {
-    %orig;
-
-    IFPreferencesApply();
-}
-
-%end
-
 %hook SBIconController
 
 /*
