@@ -88,6 +88,13 @@ __attribute__((unused)) static NSUInteger IFIconListLastIconIndex(SBIconListView
     return [model indexForIcon:icon];
 }
 
+__attribute__((unused)) static CGSize IFIconDefaultSize() {
+    Class iconClass = objc_getClass("SBIconView") ?: objc_getClass("SBIcon");
+
+    CGSize size = [iconClass defaultIconSize];
+    return size;
+}
+
 /* }}} */
 
 /* List Management {{{ */
@@ -391,7 +398,7 @@ static CGSize IFIconListSizingEffectiveContentSize(SBIconListView *listView) {
     } else {
         CGSize padding = [info defaultPadding];
         UIEdgeInsets insets = [info defaultInsets];
-        CGSize iconSize = [listView defaultIconSize];
+        CGSize iconSize = IFIconDefaultSize();
 
         contentSize.width = insets.left + effectiveDimensions.columns * (iconSize.width + padding.width) - padding.width + insets.right;
         contentSize.height = insets.top + effectiveDimensions.rows * (iconSize.height + padding.height) - padding.height + insets.bottom;

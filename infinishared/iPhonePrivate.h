@@ -1,22 +1,24 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UIDevice (Private)
-- (BOOL)isWildcat;
-@end
-
-@interface SBIcon : NSObject
+@interface SBIcon : NSObject // iOS 4.x: UIView
++ (CGSize)defaultIconSize; // iOS 4.x
 @end
 
 @interface SBIconView : UIView
-+ (CGSize)defaultIconSize;
++ (CGSize)defaultIconSize; // iOS 5.0+
 @end
 
 @interface SBIconController : NSObject
 + (SBIconController *)sharedInstance;
-- (SBIconView *)grabbedIcon;
+
 - (UIInterfaceOrientation)orientation;
+
 - (BOOL)isEditing;
+- (void)setIsEditing:(BOOL)isEditing;
+
+- (SBIconView *)grabbedIcon;
+- (void)setGrabbedIcon:(SBIconView *)grabbedIcon;
 @end
 
 @interface SBIconViewMap : NSObject
@@ -34,18 +36,12 @@
 - (NSUInteger)iconRowsForCurrentOrientation;
 - (NSUInteger)iconColumnsForCurrentOrientation;
 
-- (SBIconListModel *)model;
 - (NSArray *)icons;
+- (SBIconListModel *)model;
 
 - (NSUInteger)rowAtPoint:(CGPoint)point;
 - (NSUInteger)columnAtPoint:(CGPoint)point;
 - (CGPoint)originForIconAtX:(NSUInteger)x Y:(NSUInteger)y;
-
-- (NSUInteger)firstFreeSlotIndex;
-- (void)firstFreeSlotIndex:(NSUInteger *)index;
-- (void)firstFreeSlotX:(NSUInteger *)x Y:(NSUInteger *)y;
-
-- (void)getX:(NSUInteger *)x Y:(NSUInteger *)y forIndex:(NSUInteger)index forOrientation:(UIInterfaceOrientation)orientation;
 
 - (CGFloat)topIconInset;
 - (CGFloat)bottomIconInset;
@@ -54,7 +50,7 @@
 - (CGFloat)verticalIconPadding;
 - (CGFloat)horizontalIconPadding;
 
-- (CGSize)defaultIconSize;
+- (CGSize)defaultIconSize; // iOS 5.0+
 
 - (void)layoutIconsNow;
 @end
