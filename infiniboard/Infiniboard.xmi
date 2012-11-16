@@ -5,6 +5,7 @@
 #import "infinishared/Preferences.h"
 
 #define IFPreferencesRestoreEnabled @"RestoreEnabled", NO
+#define IFPreferencesFastRestoreEnabled @"FastRestoreEnabled", NO
 
 %group IFInfiniboard
 
@@ -22,7 +23,7 @@ static void IFRestoreIconLists() {
     });
 }
 
-static int disableRowsGhostlyFlag = 0;
+static NSUInteger IFFlagFolderOpening = 0;
 
 %hook IFConfigurationListClass
 
@@ -30,7 +31,7 @@ static int disableRowsGhostlyFlag = 0;
     SBIconView *iconView = IFIconViewForIcon(icon);
     NSUInteger ret = %orig;
 
-    if (disableRowsGhostlyFlag) {
+    if (IFFlagFolderOpening) {
         if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
             ret %= IFSizingDefaultDimensionsForIconList(self).rows;
         } else {
@@ -94,30 +95,16 @@ static int disableRowsGhostlyFlag = 0;
     }
 }
 
-- (void)setCurrentPageIconsGhostly:(BOOL)ghostly forRequester:(int)requester skipIcon:(SBIconView *)icon {
-    if (disableRowsGhostlyFlag) {
-        //IFFlagDefaultDimensions -= 1;
-        %orig;
-        //IFFlagDefaultDimensions += 1;
-    } else {
+- (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
+    // Let -iconAtPoint: know that it can slide SpringBoard "upwards" if necessary.
+    IFFlag(IFFlagFolderOpening) {
         %orig;
     }
 }
 
-- (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
-    //IFFlagDefaultDimensions += 1;
-    disableRowsGhostlyFlag += 1;
-
-    // We disable the rows here so that the folder can slide SpringBoard "upwards" if necessary.
-    %orig;
-
-    disableRowsGhostlyFlag -= 1;
-    //IFFlagDefaultDimensions -= 1;
-}
-
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    if (IFPreferencesBoolForKey(@"FastRestoreEnabled", NO)) {
+    if (IFPreferencesBoolForKey(IFPreferencesFastRestoreEnabled)) {
         IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
             [scrollView setContentOffset:CGPointZero animated:NO];
         });

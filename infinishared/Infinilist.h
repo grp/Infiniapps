@@ -128,13 +128,13 @@ __attribute__((constructor)) static void IFListsInitialize() {
     IFListsScrollViews = (NSMutableArray *) CFArrayCreateMutable(NULL, 0, &callbacks);
 }
 
-static void IFListsIterateViews(void (^block)(SBIconListView *, UIScrollView *)) {
+__attribute__((unused)) static void IFListsIterateViews(void (^block)(SBIconListView *, UIScrollView *)) {
     for (NSUInteger i = 0; i < IFMinimum([IFListsListViews count], [IFListsScrollViews count]); i++) {
         block([IFListsListViews objectAtIndex:i], [IFListsScrollViews objectAtIndex:i]);
     }
 }
 
-static SBIconListView *IFListsListViewForScrollView(UIScrollView *scrollView) {
+__attribute__((unused)) static SBIconListView *IFListsListViewForScrollView(UIScrollView *scrollView) {
     NSInteger index = [IFListsScrollViews indexOfObject:scrollView];
 
     if (index == NSNotFound) {
@@ -144,7 +144,7 @@ static SBIconListView *IFListsListViewForScrollView(UIScrollView *scrollView) {
     return [IFListsListViews objectAtIndex:index];
 }
 
-static UIScrollView *IFListsScrollViewForListView(SBIconListView *listView) {
+__attribute__((unused)) static UIScrollView *IFListsScrollViewForListView(SBIconListView *listView) {
     NSInteger index = [IFListsListViews indexOfObject:listView];
 
     if (index == NSNotFound) {
@@ -154,12 +154,12 @@ static UIScrollView *IFListsScrollViewForListView(SBIconListView *listView) {
     return [IFListsScrollViews objectAtIndex:index];
 }
 
-static void IFListsRegister(SBIconListView *listView, UIScrollView *scrollView) {
+__attribute__((unused)) static void IFListsRegister(SBIconListView *listView, UIScrollView *scrollView) {
     [IFListsListViews addObject:listView];
     [IFListsScrollViews addObject:scrollView];
 }
 
-static void IFListsUnregister(SBIconListView *listView, UIScrollView *scrollView) {
+__attribute__((unused)) static void IFListsUnregister(SBIconListView *listView, UIScrollView *scrollView) {
     [IFListsListViews removeObject:listView];
     [IFListsScrollViews removeObject:scrollView];
 }
