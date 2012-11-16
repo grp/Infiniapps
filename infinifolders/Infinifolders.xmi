@@ -6,27 +6,34 @@
 
 #import "infinishared/Infinilist.h"
 
-/* Prototypes {{{ */
-
-@interface SBFolderIcon : NSObject
-
-- (NSUInteger)_numberOfExcessIcons;
-- (NSUInteger)_maxIcons;
-- (NSUInteger)_gridColumns;
-- (id)_miniIconGridWithSkipping:(BOOL)skipping;
-- (id)folder;
-
-@end
-
-typedef struct { int direction; CGRect rect; } SBNotchInfo;
-
-/* }}} */
-
 /* IFInfinifolders {{{ */
 
 %group IFInfinifolders
 
+%hook SBFolderView
+
+- (CGFloat)_contentHeightForRows:(NSUInteger)rows {
+    SBIconListView *listView = MSHookIvar<SBIconListView *>(self, "_iconListView");
+
+    NSUInteger defaultRows = IFSizingDefaultDimensionsForIconList(listView).rows;
+    NSUInteger minimumRows = IFMinimum(rows, defaultRows);
+
+    return %orig(minimumRows);
+}
+
+%end
+
 %hook SBFolderIcon
+
++ (NSUInteger)_maxIconsInGridImage {
+    NSUInteger maxIcons = 0;
+
+    IFFlag(IFFlagDefaultDimensions) {
+        maxIcons = %orig;
+    }
+
+    return maxIcons;
+}
 
 - (NSUInteger)_numberOfExcessIcons {
     // FIXME: This is a lie (maxIcons % 3 != 0).
@@ -38,7 +45,8 @@ static int disableMaxFlag = 0;
 - (NSUInteger)_maxIcons {
     if (disableMaxFlag) {
         // Tihs fixes a speed issue on iOS 5 with too large of an image backing the folder icons.
-        NSUInteger icons = [[[[[self folder] lists] lastObject] icons] count];
+        NSArray *allIcons = [[self folder] allIcons];
+        NSUInteger icons = [allIcons count];
         icons += [self _gridColumns];
 
         NSUInteger orig = 0;

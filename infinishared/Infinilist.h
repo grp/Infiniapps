@@ -65,11 +65,11 @@ static NSUInteger IFFlagDefaultDimensions = 0;
 
 /* Conveniences {{{ */
 
-__attribute__((unused)) static int IFMinimum(int x, int y) {
+__attribute__((unused)) static NSUInteger IFMinimum(NSUInteger x, NSUInteger y) {
     return (x < y ? x : y);
 }
 
-__attribute__((unused)) static int IFMaximum(int x, int y) {
+__attribute__((unused)) static NSUInteger IFMaximum(NSUInteger x, NSUInteger y) {
     return (x > y ? x : y);
 }
 
@@ -507,6 +507,8 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
 
         UIScrollView *scrollView = IFListsScrollViewForListView(self);
         [scrollView setFrame:[self bounds]];
+
+        IFIconListSizingUpdateIconList(self);
     } else {
         %orig;
     }
@@ -535,9 +537,13 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
 
 + (NSUInteger)maxIcons {
     if (self == IFConfigurationListClassObject) {
-        // If this returns NSUIntegerMax, SpringBoard will crash.
-        // (Probably a bug with unsigned/signed integers?)
-        return NSIntegerMax;
+        if (IFFlagDefaultDimensions) {
+            return %orig;
+        } else {
+            // If this returns NSUIntegerMax, SpringBoard will crash.
+            // (Probably a bug with unsigned/signed integers?)
+            return NSIntegerMax;
+        }
     } else {
         return %orig;
     }
@@ -738,37 +744,6 @@ static id grabbedIcon = nil;
 
 %hook SBIconController
 
-/*
-// FIXME: Find a less hackish way to do this.
-static BOOL inSetGrabbedIcon = NO;
-static id currentOpenFolder = nil;
-- (BOOL)hasAnimatingFolder {
-    BOOL ret = %orig;
-    if (inSetGrabbedIcon && !ret) {
-        id _closingFolder = MSHookIvar<id>(self, "_closingFolder");
-        if (_closingFolder == nil) {
-            // Temporarily set _openFolder to nil so that _dropIconInDestinationHole:
-            // gets called instead of dropIconIntoOpenFolder:
-            id &_openFolder = MSHookIvar<id>(self, "_openFolder");
-            currentOpenFolder = _openFolder;
-            _openFolder = nil;
-        }
-    }
-
-    return ret;
-}
-
-- (void)_dropIconInDestinationHole:(id)icon {
-    if (currentOpenFolder != nil) {
-        // Restore _openFolder after removed in -hasAnimatingFolder
-        id &_openFolder = MSHookIvar<id>(self, "_openFolder");
-        _openFolder = currentOpenFolder;
-        currentOpenFolder = nil;
-    }
-
-    %orig;
-} */
-
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(SBIconListView *)listView {
     %orig;
 
@@ -782,14 +757,27 @@ static id currentOpenFolder = nil;
     }
 }
 
+- (void)_dropIconIntoOpenFolder:(SBIcon *)icon withInsertionPath:(NSIndexPath *)path {
+    %orig;
+
+    SBFolderIconListView *listView = [self currentFolderIconList];
+
+    if (IFIconListIsValid(listView)) {
+        UIScrollView *scrollView = IFListsScrollViewForListView(listView);
+        SBIconView *iconView = IFIconViewForIcon(icon);
+
+        CGRect frame = [iconView frame];
+        frame.origin.y -= [scrollView contentOffset].y;
+        [iconView setFrame:frame];
+    }
+}
+
 - (void)setGrabbedIcon:(id)icon {
     IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
         [scrollView setScrollEnabled:(icon == nil)];
     });
 
-    //inSetGrabbedIcon = YES;
     %orig;
-    //inSetGrabbedIcon = NO;
 
     if (icon != nil) {
         grabbedIcon = icon;
@@ -812,7 +800,7 @@ static id currentOpenFolder = nil;
 
 %end
 
-%end
-
 /* }}} */
+
+%end
 
