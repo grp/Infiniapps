@@ -92,6 +92,11 @@ __attribute__((unused)) static NSUInteger IFIconListLastIconIndex(SBIconListView
     return [model indexForIcon:icon];
 }
 
+__attribute__((unused)) static UIInterfaceOrientation IFIconListOrientation(SBIconListView *listView) {
+    UIInterfaceOrientation orientation = MSHookIvar<UIInterfaceOrientation>(listView, "_orientation");
+    return orientation;
+}
+
 __attribute__((unused)) static CGSize IFIconDefaultSize() {
     CGSize size = [NSClassFromString(@"SBIconView") defaultIconSize];
     return size;
@@ -254,7 +259,7 @@ static IFIconListDimensions _IFSizingDefaultDimensionsForOrientation(UIInterface
 }
 
 static IFIconListDimensions _IFSizingDefaultDimensions(SBIconListView *listView) {
-    return _IFSizingDefaultDimensionsForOrientation(MSHookIvar<UIInterfaceOrientation>(listView, "_orientation"));
+    return _IFSizingDefaultDimensionsForOrientation(IFIconListOrientation(listView));
 }
 
 static CGSize _IFSizingDefaultPadding(SBIconListView *listView) {
@@ -301,7 +306,7 @@ static IFIconListDimensions IFSizingMaximumDimensionsForOrientation(UIInterfaceO
 
 static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) {
     IFIconListDimensions dimensions = IFIconListDimensionsZero;
-    UIInterfaceOrientation orientation = MSHookIvar<UIInterfaceOrientation>(listView, "_orientation");
+    UIInterfaceOrientation orientation = IFIconListOrientation(listView);
 
     if ([[listView icons] count] > 0) {
         NSUInteger idx = IFIconListLastIconIndex(listView);
@@ -443,13 +448,10 @@ static void IFIconListSizingUpdateContentSize(SBIconListView *listView, UIScroll
     }
 
     if (!CGSizeEqualToSize(oldSize, newSize)) {
-        [UIView beginAnimations:nil context:NULL];
-        [UIView setAnimationDuration:0.3f];
-
-        [scrollView setContentSize:newSize];
-        [scrollView setContentOffset:offset animated:NO];
-
-        [UIView commitAnimations];
+        [UIView animateWithDuration:0.3f animations:^{
+            [scrollView setContentSize:newSize];
+            [scrollView setContentOffset:offset animated:NO];
+        }];
     }
 }
 
@@ -503,12 +505,29 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
 
 - (void)setFrame:(CGRect)frame {
     if (IFIconListIsValid(self)) {
+        UIScrollView *scrollView = IFListsScrollViewForListView(self);
+
+        NSUInteger page = 0;
+
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+            CGPoint offset = [scrollView contentOffset];
+            CGRect bounds = [self bounds];
+
+            page = (offset.y / bounds.size.height);
+        }
+
         %orig;
 
-        UIScrollView *scrollView = IFListsScrollViewForListView(self);
         [scrollView setFrame:[self bounds]];
-
         IFIconListSizingUpdateIconList(self);
+
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+            CGPoint offset = [scrollView contentOffset];
+            CGRect bounds = [self bounds];
+
+            offset.y = (page * bounds.size.height);
+            [scrollView setContentOffset:offset animated:NO];
+        }
     } else {
         %orig;
     }
@@ -527,6 +546,22 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
         }
     } else {
         %orig;
+    }
+}
+
+- (void)setOrientation:(UIInterfaceOrientation)orientation {
+    %orig;
+
+    if (IFIconListIsValid(self)) {
+        IFIconListSizingUpdateIconList(self);
+    }
+}
+
+- (void)cleanupAfterRotation {
+    %orig;
+
+    if (IFIconListIsValid(self)) {
+        [self layoutIconsNow];
     }
 }
 

@@ -67,14 +67,15 @@
 
 - (CGPoint)originForIconAtX:(NSUInteger)x Y:(NSUInteger)y;
 
+- (CGSize)defaultIconSize; // iOS 5.0+
 - (CGFloat)topIconInset;
 - (CGFloat)bottomIconInset;
 - (CGFloat)sideIconInset;
-
 - (CGFloat)verticalIconPadding;
 - (CGFloat)horizontalIconPadding;
 
-- (CGSize)defaultIconSize; // iOS 5.0+
+- (void)setOrientation:(UIInterfaceOrientation)orientation;
+- (void)cleanupAfterRotation;
 
 - (void)layoutIconsNow;
 @end
