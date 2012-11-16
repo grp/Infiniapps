@@ -1,4 +1,6 @@
 
+#define IFConfigurationListClass SBIconListView
+
 #import "infinishared/Infinilist.h"
 #import "infinishared/Preferences.h"
 
@@ -28,12 +30,17 @@ static int disableRowsGhostlyFlag = 0;
     SBIconView *iconView = IFIconViewForIcon(icon);
     NSUInteger ret = %orig;
 
-    if (IFFlagDefaultDimensions) {
-        UIScrollView *scrollView = IFListsScrollViewForListView(self);
+    if (disableRowsGhostlyFlag) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+            ret %= IFSizingDefaultDimensionsForIconList(self).rows;
+        } else {
+            CGPoint origin = [iconView frame].origin;
 
-        CGPoint origin = [iconView frame].origin;
-        origin.y -= [scrollView contentOffset].y;
-        ret = [self rowAtPoint:origin];
+            UIScrollView *scrollView = IFListsScrollViewForListView(self);
+            origin.y -= [scrollView contentOffset].y;
+
+            ret = [self rowAtPoint:origin];
+        }
     }
 
     return ret;
@@ -44,62 +51,68 @@ static int disableRowsGhostlyFlag = 0;
 %hook SBIconController
 
 - (CGRect)_contentViewRelativeFrameForIcon:(SBIcon *)icon {
-    SBIconView *iconView = IFIconViewForIcon(icon);
-    // FIXME: find the actual list that contains this icon
-    SBIconListView *listView = [self currentRootIconList];
+    SBIconListView *listView = IFIconListContainingIcon(icon);
     UIScrollView *scrollView = IFListsScrollViewForListView(listView);
 
     CGRect ret = %orig;
 
-    if (![iconView isInDock]) {
+    // The list could, in theory, be the dock or another list
+    // we don't care about. If it is, we won't have a scroll
+    // view for it, and thus can safely ignore moving the icon.
+    if (scrollView != nil) {
         ret.origin.y -= [scrollView contentOffset].y;
     }
 
     return ret;
 }
 
-- (void)setOpenFolder:(id)folder {
+- (void)setOpenFolder:(SBFolder *)folder {
     %orig;
 
-    if (folder == nil) return;
+    if (folder != nil) {
+        SBIcon *folderIcon = [[self openFolder] icon];
 
-    SBIconView *icon = IFIconViewForIcon([[self openFolder] icon]);
+        SBIconListView *listView = IFIconListContainingIcon(folderIcon);
+        UIScrollView *scrollView = IFListsScrollViewForListView(listView);
 
-    SBIconListView *listView = [self currentRootIconList];
-    UIScrollView *scrollView = IFListsScrollViewForListView(listView);
+        if (scrollView != nil) {
+            // We have a scroll view, so this is a list we care about.
+            SBIconView *folderIconView = IFIconViewForIcon(folderIcon);
+            [scrollView scrollRectToVisible:[folderIconView frame] animated:NO];
+        } else {
+            // Get last icon on current page; scroll that icon to visible.
+            // (This fixes visual issues when icons are partially scrolled
+            // between rows and a folder is opened when it's in the dock.)
+            CGPoint point = CGPointMake(0, [listView bounds].size.height);
+            SBIcon *lastIcon = [listView iconAtPoint:point index:NULL];
+            SBIconView *lastIconView = IFIconViewForIcon(lastIcon);
 
-    if (![icon isInDock]) {
-        [scrollView scrollRectToVisible:[icon frame] animated:NO];
-    } else {
-        // Get last icon on current page; scroll that icon to visible.
-        // (This fixes visual issues when icons are partially scrolled
-        // between rows and a folder is opened when it's in the dock.)
-        SBIconView *icon = IFIconViewForIcon([listView iconAtPoint:CGPointMake(0, [listView bounds].size.height) index:NULL]);
-        if (icon != nil) {
-            [scrollView scrollRectToVisible:[icon frame] animated:NO];
+            if (lastIconView != nil) {
+                [scrollView scrollRectToVisible:[lastIconView frame] animated:NO];
+            }
         }
     }
 }
 
 - (void)setCurrentPageIconsGhostly:(BOOL)ghostly forRequester:(int)requester skipIcon:(SBIconView *)icon {
     if (disableRowsGhostlyFlag) {
-        IFFlagDefaultDimensions -= 1;
+        //IFFlagDefaultDimensions -= 1;
         %orig;
-        IFFlagDefaultDimensions += 1;
+        //IFFlagDefaultDimensions += 1;
     } else {
         %orig;
     }
 }
 
 - (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
-    IFFlagDefaultDimensions += 1;
+    //IFFlagDefaultDimensions += 1;
     disableRowsGhostlyFlag += 1;
 
     // We disable the rows here so that the folder can slide SpringBoard "upwards" if necessary.
     %orig;
 
     disableRowsGhostlyFlag -= 1;
-    IFFlagDefaultDimensions -= 1;
+    //IFFlagDefaultDimensions -= 1;
 }
 
 
@@ -117,7 +130,7 @@ static int disableRowsGhostlyFlag = 0;
 
 %hook SBUIController
 
-- (void)restoreIconList:(BOOL)unk {
+- (void)restoreIconList:(BOOL)animated {
     %orig;
     IFRestoreIconLists();
 }
@@ -133,6 +146,26 @@ static int disableRowsGhostlyFlag = 0;
 }
 
 - (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimated:(BOOL)animated delay:(NSTimeInterval)delay {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimated:(BOOL)animated delay:(NSTimeInterval)delay animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimatedIfNeeded:(BOOL)needed animateWallpaper:(BOOL)wallpaper {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListForSuspendGesture {
     %orig;
     IFRestoreIconLists();
 }

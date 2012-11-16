@@ -10,9 +10,9 @@
 
 @interface SBFolderIcon : NSObject
 
-- (int)_numberOfExcessIcons;
-- (int)_maxIcons;
-- (int)_gridColumns;
+- (NSUInteger)_numberOfExcessIcons;
+- (NSUInteger)_maxIcons;
+- (NSUInteger)_gridColumns;
 - (id)_miniIconGridWithSkipping:(BOOL)skipping;
 - (id)folder;
 
@@ -28,7 +28,7 @@ typedef struct { int direction; CGRect rect; } SBNotchInfo;
 
 %hook SBFolderIcon
 
-- (unsigned int)_numberOfExcessIcons {
+- (NSUInteger)_numberOfExcessIcons {
     // FIXME: This is a lie (maxIcons % 3 != 0).
     return 0;
 }
@@ -36,7 +36,7 @@ typedef struct { int direction; CGRect rect; } SBNotchInfo;
 static int disableMaxFlag = 0;
 
 - (NSUInteger)_maxIcons {
-    if (disableMaxFlag > 0) {
+    if (disableMaxFlag) {
         // Tihs fixes a speed issue on iOS 5 with too large of an image backing the folder icons.
         NSUInteger icons = [[[[[self folder] lists] lastObject] icons] count];
         icons += [self _gridColumns];
@@ -83,20 +83,11 @@ static int disableMaxFlag = 0;
     %orig;
 }
 
-%end
+- (NSUInteger)_folderRowsForFolder:(SBFolder *)folder inOrientation:(UIInterfaceOrientation)orientation {
+    NSUInteger computedRows = %orig;
+    NSUInteger defaultRows = _IFSizingDefaultDimensionsForOrientation(orientation).rows;
 
-%hook SBFolderView
-
-- (id)initWithRows:(int)rows notchInfo:(SBNotchInfo)notchInfo {
-    return %orig(MIN(rows, _IFSizingDefaultDimensionsForOrientation([IFIconControllerSharedInstance() orientation]).rows), notchInfo);
-}
-
-- (id)initWithRows:(int)rows notchInfo:(SBNotchInfo)notchInfo orientation:(int)orientation {
-    return %orig(MIN(rows, _IFSizingDefaultDimensionsForOrientation(orientation).rows), notchInfo, orientation);
-}
-
-- (void)setRows:(int)rows notchInfo:(SBNotchInfo)notchInfo orientation:(int)orientation {
-    return %orig(MIN(rows, _IFSizingDefaultDimensionsForOrientation(orientation).rows), notchInfo, orientation);
+    return IFMinimum(computedRows, defaultRows);
 }
 
 %end

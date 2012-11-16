@@ -35,6 +35,10 @@
     #define IFConfigurationExpandVertically YES
 #endif
 
+#ifndef IFConfigurationDynamicColumns
+    #define IFConfigurationDynamicColumns NO
+#endif
+
 /* }}} */
 
 /* Flags {{{ */
@@ -70,12 +74,12 @@ __attribute__((unused)) static int IFMaximum(int x, int y) {
 }
 
 __attribute__((unused)) static SBIconView *IFIconViewForIcon(SBIcon *icon) {
-    Class map = objc_getClass("SBIconViewMap");
+    Class map = NSClassFromString(@"SBIconViewMap");
     return [[map homescreenMap] iconViewForIcon:icon];
 }
 
 __attribute__((unused)) static SBIconController *IFIconControllerSharedInstance() {
-    return (SBIconController *) [objc_getClass("SBIconController") sharedInstance];
+    return (SBIconController *) [NSClassFromString(@"SBIconController") sharedInstance];
 }
 
 __attribute__((unused)) static BOOL IFIconListIsValid(SBIconListView *listView) {
@@ -89,10 +93,25 @@ __attribute__((unused)) static NSUInteger IFIconListLastIconIndex(SBIconListView
 }
 
 __attribute__((unused)) static CGSize IFIconDefaultSize() {
-    Class iconClass = objc_getClass("SBIconView") ?: objc_getClass("SBIcon");
-
-    CGSize size = [iconClass defaultIconSize];
+    CGSize size = [NSClassFromString(@"SBIconView") defaultIconSize];
     return size;
+}
+
+__attribute__((unused)) static SBRootFolder *IFRootFolderSharedInstance() {
+    SBIconController *iconController = IFIconControllerSharedInstance();
+    SBRootFolder *rootFolder = MSHookIvar<SBRootFolder *>(iconController, "_rootFolder");
+    return rootFolder;
+}
+
+__attribute__((unused)) static SBIconListView *IFIconListContainingIcon(SBIcon *icon) {
+    SBIconController *iconController = IFIconControllerSharedInstance();
+    SBRootFolder *rootFolder = IFRootFolderSharedInstance();
+
+    SBIconListModel *listModel = [rootFolder listContainingIcon:icon];
+    NSInteger index = [rootFolder indexOfList:listModel];
+
+    SBIconListView *listView = [iconController rootIconListAtIndex:index];
+    return listView;
 }
 
 /* }}} */
@@ -270,11 +289,11 @@ static IFIconListDimensions IFSizingMaximumDimensionsForOrientation(UIInterfaceO
     IFIconListDimensions dimensions = _IFSizingDefaultDimensionsForOrientation(orientation);
 
     if (IFConfigurationExpandVertically) {
-        dimensions.rows = 1000;
+        dimensions.rows = NSUIntegerMax;
     }
 
     if (IFConfigurationExpandHorizontally) {
-        dimensions.columns = 1000;
+        dimensions.columns = NSUIntegerMax;
     }
 
     return dimensions;
@@ -282,6 +301,7 @@ static IFIconListDimensions IFSizingMaximumDimensionsForOrientation(UIInterfaceO
 
 static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) {
     IFIconListDimensions dimensions = IFIconListDimensionsZero;
+    UIInterfaceOrientation orientation = MSHookIvar<UIInterfaceOrientation>(listView, "_orientation");
 
     if ([[listView icons] count] > 0) {
         NSUInteger idx = IFIconListLastIconIndex(listView);
@@ -291,7 +311,7 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
             idx += 1;
         }
 
-        IFIconListDimensions maximumDimensions = IFSizingMaximumDimensionsForOrientation(MSHookIvar<UIInterfaceOrientation>(listView, "_orientation"));
+        IFIconListDimensions maximumDimensions = IFSizingMaximumDimensionsForOrientation(orientation);
         dimensions.columns = (idx % maximumDimensions.columns);
         dimensions.rows = (idx / maximumDimensions.columns);
 
@@ -299,11 +319,13 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
         dimensions.rows += 1;
         dimensions.columns += 1;
 
-        if (idx > maximumDimensions.columns) {
+        if (!IFConfigurationDynamicColumns) {
             // If we have more than one row, we necessarily have the
             // maximum number of columns at some point above the bottom.
             dimensions.columns = maximumDimensions.columns;
         }
+    } else {
+        dimensions = _IFSizingDefaultDimensionsForOrientation(orientation);
     }
 
     if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
@@ -509,8 +531,31 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
 /* }}} */
 
 /* Icon Layout {{{ */
-
 /* Dimensions {{{ */
+
++ (NSUInteger)maxIcons {
+    if (self == IFConfigurationListClassObject) {
+        // If this returns NSUIntegerMax, SpringBoard will crash.
+        // (Probably a bug with unsigned/signed integers?)
+        return NSIntegerMax;
+    } else {
+        return %orig;
+    }
+}
+
++ (NSUInteger)maxVisibleIconRowsInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+    if (self == IFConfigurationListClassObject) {
+        NSUInteger rows = 0;
+
+        IFFlag(IFFlagDefaultDimensions) {
+            rows = %orig;
+        }
+
+        return rows;
+    } else {
+        return %orig;
+    }
+}
 
 + (NSUInteger)iconRowsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     if (self == IFConfigurationListClassObject) {
@@ -670,7 +715,6 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
 }
 
 /* }}} */
-
 /* }}} */
 
 %end
@@ -726,6 +770,8 @@ static id currentOpenFolder = nil;
 } */
 
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(SBIconListView *)listView {
+    %orig;
+
     if (IFIconListIsValid(listView)) {
         UIScrollView *scrollView = IFListsScrollViewForListView(listView);
         SBIconView *iconView = IFIconViewForIcon(icon);
@@ -734,8 +780,6 @@ static id currentOpenFolder = nil;
         frame.origin.y += [scrollView contentOffset].y;
         [iconView setFrame:frame];
     }
-
-    %orig;
 }
 
 - (void)setGrabbedIcon:(id)icon {

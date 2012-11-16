@@ -3,9 +3,9 @@ Maintainer: BigBoss <bigboss@thebigboss.org>
 Name: Infiniboard
 Package: com.chpwn.infiniboard
 Section: Tweaks
-Pre-Depends: firmware (>= 4.0)
+Pre-Depends: firmware (>= 5.0)
 Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport (>= 1.6)
-Version: 1.8.2
+Version: 1.99
 Architecture: iphoneos-arm
 Description: Vertically scroll your home screen pages!
 Depiction: http://chpwn.com/cydia/infiniboard.html

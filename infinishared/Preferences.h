@@ -1,8 +1,5 @@
 
-@interface SBIconModel : NSObject { }
-+ (id)sharedInstance;
-- (void)relayout;
-@end
+#import "iPhonePrivate.h"
 
 /* Preferences {{{ */
 static NSDictionary *preferences = nil;
@@ -11,7 +8,6 @@ static void (*callback)() = NULL;
 
 static void IFPreferencesLoad() {
     [preferences release];
-    NSLog(@"IF:Preferences: Loading");
     preferences = [[NSDictionary alloc] initWithContentsOfFile:[NSString stringWithFormat:[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/%@.plist"], identifier]];
 }
 
@@ -33,16 +29,35 @@ static id IFPreferencesObjectForKey(NSString *key, id def) {
     return [preferences objectForKey:key] ?: def;
 }
 
+static SBIconModel *IFPreferencesSharedIconModel() {
+    Class modelClass = NSClassFromString(@"SBIconModel");
+
+    if ([modelClass respondsToSelector:@selector(sharedInstance)]) {
+        return [modelClass sharedInstance];
+    } else {
+        Class controllerClass = NSClassFromString(@"SBIconController");
+        SBIconController *controller = [controllerClass sharedInstance];
+
+        return [controller model];
+    }
+}
+
+static void IFPreferencesIconModelLayout(SBIconModel *model) {
+    if ([model respondsToSelector:@selector(relayout)]) {
+        [model relayout];
+    } else {
+        [model layout];
+    }
+}
+
 static void IFPreferencesChangedCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
     IFPreferencesLoad();
-
-    NSLog(@"IF:Preferences: Changed");
 
     if (callback != NULL) {
         callback();
     }
 
-    [[objc_getClass("SBIconModel") sharedInstance] relayout];
+    IFPreferencesIconModelLayout(IFPreferencesSharedIconModel());
 }
 
 static void IFPreferencesInitialize(NSString *bundleIdentifier, void (*cb)()) {
