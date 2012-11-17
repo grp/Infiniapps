@@ -164,6 +164,7 @@ static NSUInteger IFFlagFolderOpening = 0;
 /* Constructor {{{ */
 
 __attribute__((constructor)) static void infiniboard_init() {
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/_iPhoneRotator.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/SixRows.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/7x7SpringBoard.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/CategoriesSB.dylib", RTLD_LAZY);

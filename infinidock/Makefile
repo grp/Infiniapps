@@ -1,16 +1,15 @@
 export GO_EASY_ON_ME=1
-export TARGET_IPHONEOS_DEPLOYMENT_VERSION=3.0
-export ARCHS=armv7
 
-TWEAK_NAME = Infinidock
-OPTFLAG = -O1
-Infinidock_OBJCC_FILES = Base.xm Wildcat.xm Three.xm Four.xm infinishared/Infinishared.xmi
-Infinidock_FRAMEWORKS = UIKit CoreGraphics QuartzCore
+export TARGET_CXX = xcrun -sdk iphoneos clang++
+export TARGET_LD = xcrun -sdk iphoneos clang++
+export TARGET = iphone:latest:5.0
+export ARCHS = armv7 # pending theos bug: armv7s
 
 include theos/makefiles/common.mk
 
-ifeq ($(FW_TARGET_NAME),iphone)
-Infinidock_LDFLAGS = -llockdown
-endif
+TWEAK_NAME = Infinidock
+Infinidock_FILES = Infinidock.xmi
+Infinidock_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 
-include theos/makefiles/tweak.mk
+include $(THEOS_MAKE_PATH)/tweak.mk
+

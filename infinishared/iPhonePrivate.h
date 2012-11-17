@@ -83,6 +83,9 @@
 @interface SBFolderIconListView : SBIconListView
 @end
 
+@interface SBDockIconListView : SBIconListView
+@end
+
 @interface SBIconController : NSObject
 + (SBIconController *)sharedInstance;
 

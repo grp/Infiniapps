@@ -209,7 +209,8 @@ static void IFPreferencesApplyToList(SBIconListView *listView) {
         [scrollView setShowsVerticalScrollIndicator:NO];
 
     [scrollView setScrollEnabled:scroll];
-    [scrollView setAlwaysBounceVertical:bounce == kIFScrollBounceEnabled];
+    [scrollView setAlwaysBounceVertical:IFConfigurationExpandVertically && (bounce == kIFScrollBounceEnabled)];
+    [scrollView setAlwaysBounceHorizontal:IFConfigurationExpandHorizontally && (bounce == kIFScrollBounceEnabled)];
     [scrollView setBounces:bounce != kIFScrollBounceDisabled];
     [scrollView setPagingEnabled:page];
     [scrollView setClipsToBounds:clips];
