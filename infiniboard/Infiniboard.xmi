@@ -164,6 +164,8 @@ static NSUInteger IFFlagFolderOpening = 0;
 /* Constructor {{{ */
 
 __attribute__((constructor)) static void infiniboard_init() {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
     dlopen("/Library/MobileSubstrate/DynamicLibraries/_iPhoneRotator.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/SixRows.dylib", RTLD_LAZY);
     dlopen("/Library/MobileSubstrate/DynamicLibraries/7x7SpringBoard.dylib", RTLD_LAZY);
@@ -182,8 +184,10 @@ __attribute__((constructor)) static void infiniboard_init() {
     dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
     [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infiniboard"];
 
-    %init(IFBasic);
     %init(IFInfiniboard);
+    %init(IFBasic);
+
+    [pool release];
 }
 
 /* }}} */

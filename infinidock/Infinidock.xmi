@@ -4,10 +4,124 @@
 #define IFConfigurationExpandVertically NO
 #define IFConfigurationDynamicColumns YES
 
+#define IFPreferencesPagingEnabled @"IFPagingEnabled", NO
+#define IFPreferencesScrollEnabled @"IFScrollEnabled", NO
+
 #import "infinishared/Infinilist.h"
 #import "infinishared/Preferences.h"
 
+#define IFPreferencesIconsPerPage @"IFIconsPerPage", 4
+#define IFPreferencesRestorePage @"IFRestoreEnabled", 0
+#define IFPreferencesSnapEnabled @"IFSnapEnabled", NO
+
 %group IFInfinidock
+
+%hook IFConfigurationListClass
+
++ (NSUInteger)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+    if (self == IFConfigurationListClassObject) {
+        NSUInteger icons = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
+        return icons;
+    } else {
+        return %orig;
+    }
+}
+
+- (NSInteger)visibleIconsInDock {
+    if (IFIconListIsValid(self)) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+            NSInteger icons = %orig;
+            NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
+
+            icons = (icons % defaultIcons);
+            return icons;
+        } else {
+            NSInteger icons = %orig;
+
+            return IFMinimum(icons, iconsPerPage);
+        }
+    } else {
+        return %orig;
+    }
+}
+
+- (NSUInteger)iconsInRowForSpacingCalculation {
+    /*if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+        
+    } else {
+
+    }*/
+    return %orig;
+}
+
+%end
+
+%hook SBUIController
+
+static void IFRestoreIconLists() {
+    IFPreferencesApply();
+
+    IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
+        NSUInteger page = IFPreferencesIntForKey(IFPreferencesRestorePage);
+
+        if (page != 0) {
+            // The actual page to restore to.
+            page = (page - 1);
+
+            CGSize size = [scrollView bounds].size;
+
+            if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+                CGPoint offset = [scrollView contentOffset];
+                offset.x = (size.width * page);
+                [scrollView setContentOffset:offset animated:NO];
+            } else {
+                // FIXME: restore to page without paging enabled
+            }
+        }
+    });
+}
+
+- (void)restoreIconList:(BOOL)animated {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimated:(BOOL)animated {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)animateWallpaper {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimated:(BOOL)animated delay:(NSTimeInterval)delay {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimated:(BOOL)animated delay:(NSTimeInterval)delay animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListAnimatedIfNeeded:(BOOL)needed animateWallpaper:(BOOL)wallpaper {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreIconListForSuspendGesture {
+    %orig;
+    IFRestoreIconLists();
+}
+
+%end
 
 %end
 
@@ -23,8 +137,8 @@ __attribute__((constructor)) static void infinidock_init() {
     dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
     [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infinidock"];
 
-    %init(IFBasic);
     %init(IFInfinidock);
+    %init(IFBasic);
 
     [pool release];
 }

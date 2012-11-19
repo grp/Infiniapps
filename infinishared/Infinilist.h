@@ -185,11 +185,25 @@ typedef enum {
     kIFScrollBounceDisabled
 } IFScrollBounce;
 
-#define IFPreferencesPagingEnabled @"PagingEnabled", NO
-#define IFPreferencesScrollEnabled @"ScrollEnabled", YES
-#define IFPreferencesScrollBounce @"ScrollBounce", kIFScrollBounceEnabled
-#define IFPreferencesScrollbarStyle @"ScrollbarStyle", kIFScrollbarStyleBlack
-#define IFPreferencesClipsToBounds @"ClipsToBounds", YES
+#ifndef IFPreferencesPagingEnabled
+    #define IFPreferencesPagingEnabled @"PagingEnabled", NO
+#endif
+
+#ifndef IFPreferencesScrollEnabled
+    #define IFPreferencesScrollEnabled @"ScrollEnabled", YES
+#endif
+
+#ifndef IFPreferencesScrollBounce
+    #define IFPreferencesScrollBounce @"ScrollBounce", kIFScrollBounceEnabled
+#endif
+
+#ifndef IFPreferencesScrollbarStyle
+    #define IFPreferencesScrollbarStyle @"ScrollbarStyle", kIFScrollbarStyleBlack
+#endif
+
+#ifndef IFPreferencesClipsToBounds
+    #define IFPreferencesClipsToBounds @"ClipsToBounds", YES
+#endif
 
 static void IFPreferencesApplyToList(SBIconListView *listView) {
     UIScrollView *scrollView = IFListsScrollViewForListView(listView);
@@ -295,11 +309,11 @@ static IFIconListDimensions IFSizingMaximumDimensionsForOrientation(UIInterfaceO
     IFIconListDimensions dimensions = _IFSizingDefaultDimensionsForOrientation(orientation);
 
     if (IFConfigurationExpandVertically) {
-        dimensions.rows = NSUIntegerMax;
+        dimensions.rows = NSIntegerMax;
     }
 
     if (IFConfigurationExpandHorizontally) {
-        dimensions.columns = NSUIntegerMax;
+        dimensions.columns = NSIntegerMax;
     }
 
     return dimensions;
@@ -576,8 +590,6 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
         if (IFFlagDefaultDimensions) {
             return %orig;
         } else {
-            // If this returns NSUIntegerMax, SpringBoard will crash.
-            // (Probably a bug with unsigned/signed integers?)
             return NSIntegerMax;
         }
     } else {

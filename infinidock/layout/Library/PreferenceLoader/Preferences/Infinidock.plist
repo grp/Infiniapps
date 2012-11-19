@@ -15,34 +15,14 @@
 	</dict>
 	<key>items</key>
 	<array>
-		<!-- Disabled because for most users this is useless! -->
-		<!--<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Max Icons</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSliderCell</string>
-			<key>min</key>
-			<integer>1</integer>
-			<key>max</key>
-			<integer>200</integer>
-			<key>showValue</key>
-			<true/>
-			<key>key</key>
-			<string>IFMaxIcons</string>
-			<key>defaults</key>
-			<string>com.chpwn.infinidock</string>
-			<key>PostNotification</key>
-			<string>com.chpwn.infinidock.prefs</string>
-		</dict>-->
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Settings</string>
+	        <key>footerText</key>
+	        <string>Infinidock © 2012 Xuzz Productions, LLC.
+Support is available in Cydia.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -96,7 +76,7 @@
 			<key>defaults</key>
 			<string>com.chpwn.infinidock</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infinidock.prefs</string>
+			<string>com.chpwn.infinidock.preferences-changed</string>
 			<key>requiredCapabilities</key>
 			<array>
 				<dict>
@@ -145,7 +125,7 @@
 			<key>defaults</key>
 			<string>com.chpwn.infinidock</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infinidock.prefs</string>
+			<string>com.chpwn.infinidock.preferences-changed</string>
 			<key>requiredCapabilities</key>
 			<array>
 				<dict>
@@ -196,7 +176,7 @@
 			<key>defaults</key>
 			<string>com.chpwn.infinidock</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infinidock.prefs</string>
+			<string>com.chpwn.infinidock.preferences-changed</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -208,7 +188,7 @@
 			<key>label</key>
 			<string>Scrolling</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infinidock.prefs</string>
+			<string>com.chpwn.infinidock.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infinidock</string>
 		</dict>
@@ -222,7 +202,7 @@
 			<key>label</key>
 			<string>Paging</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infinidock.prefs</string>
+			<string>com.chpwn.infinidock.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infinidock</string>
 		</dict>
@@ -236,56 +216,10 @@
 			<key>label</key>
 			<string>Scrolling Snap</string>
 			<key>PostNotification</key>
-			<string>com.chpwn.infinidock.prefs</string>
+			<string>com.chpwn.infinidock.preferences-changed</string>
 			<key>defaults</key>
 			<string>com.chpwn.infinidock</string>
 		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>isStaticText</key>
-			<true/>
-		</dict>
-		
-		<!-- Start static text block -->
-		<dict>
-	      <key>cell</key>
-	      <string>PSGroupCell</string>
-	      <key>footerText</key>
-	      <string>Infinidock © 2010 Grant Paul.</string>
-	    </dict>
-	    <dict>
-	      <key>cell</key>
-	      <string>PSGroupCell</string>
-	      <key>isStaticText</key>
-	      <string>true</string>
-	      <key>requiredCapabilities</key>
-	      <array>
-	        <dict>
-	          <key>wildcat</key>
-	          <false/>
-	          <key>voip</key>
-	          <false/>
-	        </dict>
-	      </array>
-	    </dict>
-	    <dict>
-	      <key>cell</key>
-	      <string>PSTitleValueCell</string>
-	      <key>label</key>
-	      <string>Infinidock © 2010 Grant Paul.</string>
-	      <key>requiredCapabilities</key>
-	      <array>
-	        <dict>
-	          <key>wildcat</key>
-	          <false/>
-	          <key>voip</key>
-	          <false/>
-	        </dict>
-	      </array>
-	    </dict>
-		<!-- End static text block -->
-
 	</array>
 </dict>
 </plist>

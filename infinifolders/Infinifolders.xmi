@@ -116,8 +116,8 @@ __attribute__((constructor)) static void infinifolders_init() {
     dlopen("/Library/MobileSubstrate/DynamicLibraries/IconSupport.dylib", RTLD_LAZY);
     [[objc_getClass("ISIconSupport") sharedInstance] addExtension:@"infinifolders"];
 
-    %init(IFBasic);
     %init(IFInfinifolders);
+    %init(IFBasic);
 
     [pool release];
 }
