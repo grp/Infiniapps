@@ -21,7 +21,8 @@
 			<key>label</key>
 			<string>Settings</string>
 	        <key>footerText</key>
-	        <string>Infiniboard is © 2010-2012 Xuzz Productions, LLC.</string>
+	        <string>Infiniboard © 2012 Xuzz Productions, LLC.
+Support is available in Cydia.</string>
 		</dict>
 		<dict>
 			<key>cell</key>

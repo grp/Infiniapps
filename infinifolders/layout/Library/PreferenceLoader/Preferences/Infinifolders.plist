@@ -21,7 +21,8 @@
 			<key>label</key>
 			<string>Settings</string>
 	        <key>footerText</key>
-	        <string>Infinifolders is © 2010-2011 Xuzz Productions, LLC.</string>
+	        <string>Infinifolders © 2011 Xuzz Productions, LLC.
+Support is available in Cydia.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
