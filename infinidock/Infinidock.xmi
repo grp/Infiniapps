@@ -19,6 +19,13 @@
 
 %hook IFConfigurationListClass
 
+static BOOL IFIconListAtLeastDefaultIcons(SBIconListView *listView) {
+    NSInteger icons = [[listView icons] count];
+    NSInteger defaultIcons = [IFIconListSizingInformationForIconList(listView) defaultDimensions].columns;
+
+    return (icons >= defaultIcons);
+}
+
 + (NSUInteger)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     if (self == IFConfigurationListClassObject) {
         NSUInteger icons = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
@@ -30,16 +37,13 @@
 
 - (NSInteger)visibleIconsInDock {
     if (IFIconListIsValid(self)) {
-        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
             NSInteger icons = %orig;
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
             return IFMinimum(icons, defaultIcons);
         } else {
-            NSInteger icons = %orig;
-            NSInteger iconsPerPage = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
-
-            return IFMinimum(icons, iconsPerPage);
+            return %orig;
         }
     } else {
         return %orig;
@@ -48,15 +52,12 @@
 
 - (NSUInteger)iconsInRowForSpacingCalculation {
     if (IFIconListIsValid(self)) {
-        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
             return IFMaximum(defaultIcons, 4);
         } else {
-            NSInteger icons = %orig;
-            NSInteger iconsPerPage = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
-
-            return IFMinimum(icons, iconsPerPage);
+            return %orig;
         }
     } else {
         return %orig;
@@ -64,11 +65,67 @@
 }
 
 - (CGFloat)horizontalIconPadding {
-    IFFlagExpandedFrame -= 1;
-    CGFloat additional = %orig;
-    IFFlagExpandedFrame += 1;
-    return additional;
+    if (IFIconListIsValid(self)) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
+            IFFlagExpandedFrame -= 1;
+            CGFloat additional = %orig;
+            IFFlagExpandedFrame += 1;
+            return additional;
+        } else {
+            NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
+            // The hard case: even spacing.
+            if (defaultIcons < 4) {
+                // This is valid because with even spacing, all icons are the same
+                // distance apart, and so the side edge distance is also the spacing.
+
+                // This is required because the default spacing algorithm will not
+                // work for one icon per page, as there will be no need for a distance
+                // beteween icons. But, there is an equivalent side inset, so use that.
+                return [self sideIconInset];
+            } else {
+                return %orig;
+            }
+        }
+    } else {
+        return %orig;
+    }
+}
+
+- (CGFloat)sideIconInset {
+    if (IFIconListIsValid(self)) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
+            return %orig;
+        } else {
+            NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
+
+            // The hard case: even spacing.
+            if (defaultIcons < 4) {
+                CGFloat iconWidth = IFIconDefaultSize().width;
+                CGFloat width = [IFListsScrollViewForListView(self) bounds].size.width;
+
+                CGFloat blankWidth = width - (iconWidth * defaultIcons);
+                CGFloat singleBlank = blankWidth / (defaultIcons + 1);
+                return singleBlank;
+            } else {
+                return %orig;
+            }
+        }
+    } else {
+        return %orig;
+    }
+}
+
+- (CGFloat)_additionalSideInsetToCenterIcons {
+    if (IFIconListIsValid(self)) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
+            return %orig;
+        } else {
+            return 0.0;
+        }
+    } else {
+        return %orig;
+    }
 }
 
 %end
