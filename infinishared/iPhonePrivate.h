@@ -95,6 +95,7 @@
 - (void)setIsEditing:(BOOL)isEditing;
 
 - (SBIconModel *)model; // iOS 6.0+
+- (SBDockIconListView *)dock;
 - (SBIconListView *)currentRootIconList;
 - (SBIconListView *)rootIconListAtIndex:(NSInteger)index;
 - (SBFolderIconListView *)currentFolderIconList;

@@ -121,10 +121,13 @@ __attribute__((unused)) static SBIconListView *IFIconListContainingIcon(SBIcon *
     SBRootFolder *rootFolder = IFRootFolderSharedInstance();
 
     SBIconListModel *listModel = [rootFolder listContainingIcon:icon];
-    NSInteger index = [rootFolder indexOfList:listModel];
 
-    SBIconListView *listView = [iconController rootIconListAtIndex:index];
-    return listView;
+    if ([listModel isKindOfClass:NSClassFromString(@"SBDockIconListModel")]) {
+        return [iconController dock];
+    } else {
+        NSUInteger index = [rootFolder indexOfList:listModel];
+        return [iconController rootIconListAtIndex:index];
+    }
 }
 
 /* }}} */
@@ -829,6 +832,7 @@ static id grabbedIcon = nil;
     // we don't care about. If it is, we won't have a scroll
     // view for it, and can safely ignore moving the icon.
     if (scrollView != nil) {
+        CGRect r = ret;
         ret.origin.x -= [scrollView contentOffset].x;
         ret.origin.y -= [scrollView contentOffset].y;
     }
