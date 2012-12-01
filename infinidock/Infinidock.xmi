@@ -3,6 +3,7 @@
 #define IFConfigurationExpandHorizontally YES
 #define IFConfigurationExpandVertically NO
 #define IFConfigurationDynamicColumns YES
+#define IFConfigurationExpandWhenEditing NO
 
 #define IFPreferencesPagingEnabled @"IFPagingEnabled", NO
 #define IFPreferencesScrollEnabled @"IFScrollEnabled", NO
@@ -33,10 +34,10 @@
             NSInteger icons = %orig;
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
-            icons = (icons % defaultIcons);
-            return icons;
+            return IFMinimum(icons, defaultIcons);
         } else {
             NSInteger icons = %orig;
+            NSInteger iconsPerPage = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
 
             return IFMinimum(icons, iconsPerPage);
         }
@@ -46,12 +47,28 @@
 }
 
 - (NSUInteger)iconsInRowForSpacingCalculation {
-    /*if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
-        
-    } else {
+    if (IFIconListIsValid(self)) {
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+            NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
-    }*/
-    return %orig;
+            return IFMaximum(defaultIcons, 4);
+        } else {
+            NSInteger icons = %orig;
+            NSInteger iconsPerPage = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
+
+            return IFMinimum(icons, iconsPerPage);
+        }
+    } else {
+        return %orig;
+    }
+}
+
+- (CGFloat)horizontalIconPadding {
+    IFFlagExpandedFrame -= 1;
+    CGFloat additional = %orig;
+    IFFlagExpandedFrame += 1;
+    return additional;
+
 }
 
 %end

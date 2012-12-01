@@ -27,6 +27,10 @@
 
 #define IFConfigurationListClassObject NSClassFromString(@IFMacroQuote(IFConfigurationListClass))
 
+#ifndef IFConfigurationExpandWhenEditing
+    #define IFConfigurationExpandWhenEditing YES
+#endif
+
 #ifndef IFConfigurationExpandHorizontally
     #define IFConfigurationExpandHorizontally NO
 #endif
@@ -326,7 +330,7 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
     if ([[listView icons] count] > 0) {
         NSUInteger idx = IFIconListLastIconIndex(listView);
 
-        if ([IFIconControllerSharedInstance() isEditing]) {
+        if (IFConfigurationExpandWhenEditing && [IFIconControllerSharedInstance() isEditing]) {
             // Add room to drop the icon into.
             idx += 1;
         }
