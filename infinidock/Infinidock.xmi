@@ -7,6 +7,8 @@
 
 #define IFPreferencesPagingEnabled @"IFPagingEnabled", NO
 #define IFPreferencesScrollEnabled @"IFScrollEnabled", NO
+#define IFPreferencesScrollBounce @"IFScrollBounce", kIFScrollBounceEnabled
+#define IFPreferencesScrollbarStyle @"IFScrollbarStyle", kIFScrollbarStyleNone
 
 #import "infinishared/Infinilist.h"
 #import "infinishared/Preferences.h"

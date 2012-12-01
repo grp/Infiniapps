@@ -142,6 +142,62 @@ Support is available in Cydia.</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>
+			<string>IFScrollBounce</string>
+			<key>label</key>
+			<string>Scrolling Bounce</string>
+			<key>validTitles</key>
+			<array>
+				<string>Enabled</string>
+				<string>Enabled with Extra Icons</string>
+				<string>Disabled</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			<key>defaults</key>
+			<string>com.chpwn.infinidock</string>
+			<key>PostNotification</key>
+			<string>com.chpwn.infinidock.preferences-changed</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<integer>2</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
+			<string>IFScrollbarStyle</string>
+			<key>label</key>
+			<string>Scrollbar Style</string>
+			<key>validTitles</key>
+			<array>
+				<string>Black</string>
+				<string>White</string>
+				<string>Disabled</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+			</array>
+			<key>defaults</key>
+			<string>com.chpwn.infinidock</string>
+			<key>PostNotification</key>
+			<string>com.chpwn.infinidock.preferences-changed</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>detail</key>
+			<string>PSListItemsController</string>
+			<key>key</key>
 			<string>IFRestoreEnabled</string>
 			<key>label</key>
 			<string>Start at Page</string>

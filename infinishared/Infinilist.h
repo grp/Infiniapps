@@ -223,17 +223,21 @@ static void IFPreferencesApplyToList(SBIconListView *listView) {
     BOOL clips = IFPreferencesBoolForKey(IFPreferencesClipsToBounds);
 
     [scrollView setShowsVerticalScrollIndicator:YES];
-    if (bar == kIFScrollbarStyleBlack)
+    [scrollView setShowsHorizontalScrollIndicator:YES];
+    if (bar == kIFScrollbarStyleBlack) {
         [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleDefault];
-    else if (bar == kIFScrollbarStyleWhite)
+    } else if (bar == kIFScrollbarStyleWhite) {
         [scrollView setIndicatorStyle:UIScrollViewIndicatorStyleWhite];
-    else if (bar == kIFScrollbarStyleNone)
+    } else if (bar == kIFScrollbarStyleNone) {
         [scrollView setShowsVerticalScrollIndicator:NO];
+        [scrollView setShowsHorizontalScrollIndicator:NO];
+    }
 
-    [scrollView setScrollEnabled:scroll];
     [scrollView setAlwaysBounceVertical:IFConfigurationExpandVertically && (bounce == kIFScrollBounceEnabled)];
     [scrollView setAlwaysBounceHorizontal:IFConfigurationExpandHorizontally && (bounce == kIFScrollBounceEnabled)];
-    [scrollView setBounces:bounce != kIFScrollBounceDisabled];
+    [scrollView setBounces:(bounce != kIFScrollBounceDisabled)];
+
+    [scrollView setScrollEnabled:scroll];
     [scrollView setPagingEnabled:page];
     [scrollView setClipsToBounds:clips];
     [listView setClipsToBounds:clips];
@@ -247,7 +251,8 @@ static void IFPreferencesApplyToList(SBIconListView *listView) {
             max = [listView iconRowsForCurrentOrientation] * [listView iconColumnsForCurrentOrientation];
         }
 
-        [scrollView setAlwaysBounceVertical:(idx > max)];
+        [scrollView setAlwaysBounceVertical:IFConfigurationExpandVertically && (idx > max)];
+        [scrollView setAlwaysBounceHorizontal:IFConfigurationExpandHorizontally && (idx > max)];
     }
 }
 
