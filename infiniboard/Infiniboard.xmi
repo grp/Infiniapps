@@ -51,22 +51,6 @@ static NSUInteger IFFlagFolderOpening = 0;
 
 %hook SBIconController
 
-- (CGRect)_contentViewRelativeFrameForIcon:(SBIcon *)icon {
-    SBIconListView *listView = IFIconListContainingIcon(icon);
-    UIScrollView *scrollView = IFListsScrollViewForListView(listView);
-
-    CGRect ret = %orig;
-
-    // The list could, in theory, be the dock or another list
-    // we don't care about. If it is, we won't have a scroll
-    // view for it, and thus can safely ignore moving the icon.
-    if (scrollView != nil) {
-        ret.origin.y -= [scrollView contentOffset].y;
-    }
-
-    return ret;
-}
-
 - (void)setOpenFolder:(SBFolder *)folder {
     %orig;
 

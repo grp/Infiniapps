@@ -47,20 +47,24 @@
 
 /* Flags {{{ */
 
+#define IFConcat_(x, y) x ## y
+#define IFConcat(x, y) IFConcat_(x, y)
+
 // Custom control structure for managing flags safely.
 // Usage: IFFlag(IFFlagNamedThis) { /* code with flag enabled */ }
 // Do not return out of this structure, or the flag is stuck.
-#define IFFlag(flag) \
+#define IFFlag_(flag, c) \
     if (1) { \
         flag += 1; \
-        goto body; \
+        goto IFConcat(body, c); \
     } else \
         while (1) \
             if (1) { \
                 flag -= 1; \
                 break; \
             } else \
-                body:
+                IFConcat(body, c):
+#define IFFlag(flag) IFFlag_(flag, __COUNTER__)
 
 static NSUInteger IFFlagExpandedFrame = 0;
 static NSUInteger IFFlagDefaultDimensions = 0;
@@ -796,6 +800,23 @@ static id grabbedIcon = nil;
 
 %hook SBIconController
 
+- (CGRect)_contentViewRelativeFrameForIcon:(SBIcon *)icon {
+    SBIconListView *listView = IFIconListContainingIcon(icon);
+    UIScrollView *scrollView = IFListsScrollViewForListView(listView);
+
+    CGRect ret = %orig;
+
+    // The list could, in theory, be in another list that
+    // we don't care about. If it is, we won't have a scroll
+    // view for it, and can safely ignore moving the icon.
+    if (scrollView != nil) {
+        ret.origin.x -= [scrollView contentOffset].x;
+        ret.origin.y -= [scrollView contentOffset].y;
+    }
+
+    return ret;
+}
+
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(SBIconListView *)listView {
     %orig;
 
@@ -804,6 +825,7 @@ static id grabbedIcon = nil;
         SBIconView *iconView = IFIconViewForIcon(icon);
 
         CGRect frame = [iconView frame];
+        frame.origin.x += [scrollView contentOffset].x;
         frame.origin.y += [scrollView contentOffset].y;
         [iconView setFrame:frame];
     }
@@ -819,6 +841,7 @@ static id grabbedIcon = nil;
         SBIconView *iconView = IFIconViewForIcon(icon);
 
         CGRect frame = [iconView frame];
+        frame.origin.x -= [scrollView contentOffset].x;
         frame.origin.y -= [scrollView contentOffset].y;
         [iconView setFrame:frame];
     }

@@ -11,7 +11,23 @@
 #import "infinishared/Infinilist.h"
 #import "infinishared/Preferences.h"
 
-#define IFPreferencesIconsPerPage @"IFIconsPerPage", 4
+static NSInteger IFFlagDefaultIconsPerPage = 0;
+
+static NSUInteger IFVeryDefaultIconColumns() {
+    // Both default for Infinilist and for Infinidock.
+    UIInterfaceOrientation orientation = [IFIconControllerSharedInstance() orientation];
+
+    NSUInteger icons = 0;
+    IFFlag(IFFlagDefaultDimensions) {
+        IFFlag(IFFlagDefaultIconsPerPage) {
+            icons = [IFConfigurationListClassObject iconColumnsForInterfaceOrientation:orientation];
+        }
+    }
+
+    return icons;
+}
+
+#define IFPreferencesIconsPerPage @"IFIconsPerPage", (IFVeryDefaultIconColumns())
 #define IFPreferencesRestorePage @"IFRestoreEnabled", 0
 #define IFPreferencesSnapEnabled @"IFSnapEnabled", NO
 
@@ -19,15 +35,38 @@
 
 %hook IFConfigurationListClass
 
-static BOOL IFIconListAtLeastDefaultIcons(SBIconListView *listView) {
-    NSInteger icons = [[listView icons] count];
-    NSInteger defaultIcons = [IFIconListSizingInformationForIconList(listView) defaultDimensions].columns;
+typedef enum {
+    kIFIconLayoutMethodDefault, // Handles up to default number of icons, positions as if built-in.
+    kIFIconLayoutMethodGrow, // Handles any number of icons, positions as if built-in but grows from the left.
+    kIFIconLayoutMethodEven // Handles any number of icons, positions with equal spacing.
+} IFIconLayoutMethod;
 
-    return (icons >= defaultIcons);
+static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView) {
+    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+        // We never simulate more than the default count of icons
+        // when paging, so this layout method always works.
+        return kIFIconLayoutMethodDefault;
+    } else {
+        NSInteger icons = [[listView icons] count];
+        NSInteger defaultIcons = [IFIconListSizingInformationForIconList(listView) defaultDimensions].columns;
+
+        if (icons < defaultIcons) {
+            // When we have less than the selected number of icons,
+            // we need to center them as with the built-in spacing.
+            return kIFIconLayoutMethodDefault;
+        } else if (defaultIcons < IFVeryDefaultIconColumns()) {
+            // If we are showing a small number of icons per page,
+            // they will not center themselves right. Fix that.
+            return kIFIconLayoutMethodEven;
+        } else {
+            // Most cases for non-paged icons.
+            return kIFIconLayoutMethodGrow;
+        }
+    }
 }
 
 + (NSUInteger)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    if (self == IFConfigurationListClassObject) {
+    if (self == IFConfigurationListClassObject && !IFFlagDefaultIconsPerPage) {
         NSUInteger icons = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
         return icons;
     } else {
@@ -35,9 +74,11 @@ static BOOL IFIconListAtLeastDefaultIcons(SBIconListView *listView) {
     }
 }
 
+static NSInteger IFFlagDisableVisibleIcons = 0;
+
 - (NSInteger)visibleIconsInDock {
-    if (IFIconListIsValid(self)) {
-        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
+    if (IFIconListIsValid(self) && !IFFlagDisableVisibleIcons) {
+        if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
             NSInteger icons = %orig;
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
@@ -52,10 +93,10 @@ static BOOL IFIconListAtLeastDefaultIcons(SBIconListView *listView) {
 
 - (NSUInteger)iconsInRowForSpacingCalculation {
     if (IFIconListIsValid(self)) {
-        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
+        if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
-            return IFMaximum(defaultIcons, 4);
+            return IFMaximum(defaultIcons, IFVeryDefaultIconColumns());
         } else {
             return %orig;
         }
@@ -66,26 +107,24 @@ static BOOL IFIconListAtLeastDefaultIcons(SBIconListView *listView) {
 
 - (CGFloat)horizontalIconPadding {
     if (IFIconListIsValid(self)) {
-        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
+        if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
+            // This is unfortunate, but currently required. Otherwise, the original
+            // implementation will use the expanded frame, and will return an
+            // incorrect value and icons will appear positioned very strangely.
             IFFlagExpandedFrame -= 1;
             CGFloat additional = %orig;
             IFFlagExpandedFrame += 1;
             return additional;
+        } else if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodEven) {
+            // This is valid because with even spacing, all icons are the same
+            // distance apart, and so the side edge distance is also the spacing.
+
+            // This is required because the default spacing algorithm will not
+            // work for one icon per page, as there will be no need for a distance
+            // beteween icons. But, there is an equivalent side inset, so use that.
+            return [self sideIconInset];
         } else {
-            NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
-
-            // The hard case: even spacing.
-            if (defaultIcons < 4) {
-                // This is valid because with even spacing, all icons are the same
-                // distance apart, and so the side edge distance is also the spacing.
-
-                // This is required because the default spacing algorithm will not
-                // work for one icon per page, as there will be no need for a distance
-                // beteween icons. But, there is an equivalent side inset, so use that.
-                return [self sideIconInset];
-            } else {
-                return %orig;
-            }
+            return %orig;
         }
     } else {
         return %orig;
@@ -94,22 +133,17 @@ static BOOL IFIconListAtLeastDefaultIcons(SBIconListView *listView) {
 
 - (CGFloat)sideIconInset {
     if (IFIconListIsValid(self)) {
-        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
-            return %orig;
-        } else {
+        if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodEven) {
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
-            // The hard case: even spacing.
-            if (defaultIcons < 4) {
-                CGFloat iconWidth = IFIconDefaultSize().width;
-                CGFloat width = [IFListsScrollViewForListView(self) bounds].size.width;
+            CGFloat iconWidth = IFIconDefaultSize().width;
+            CGFloat width = [IFListsScrollViewForListView(self) bounds].size.width;
 
-                CGFloat blankWidth = width - (iconWidth * defaultIcons);
-                CGFloat singleBlank = blankWidth / (defaultIcons + 1);
-                return singleBlank;
-            } else {
-                return %orig;
-            }
+            CGFloat blankWidth = width - (iconWidth * defaultIcons);
+            CGFloat singleBlank = blankWidth / (defaultIcons + 1);
+            return singleBlank;
+        } else {
+            return %orig;
         }
     } else {
         return %orig;
@@ -118,14 +152,35 @@ static BOOL IFIconListAtLeastDefaultIcons(SBIconListView *listView) {
 
 - (CGFloat)_additionalSideInsetToCenterIcons {
     if (IFIconListIsValid(self)) {
-        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || !IFIconListAtLeastDefaultIcons(self)) {
+        if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
             return %orig;
         } else {
+            // Other methods don't want a side inset.
             return 0.0;
         }
     } else {
         return %orig;
     }
+}
+
+%end
+
+%hook SBIconController
+
+// This method checks -visibleIconsInDock and won't add any past the end. As we hook that for spacing reasons,
+// this hook is necessary to disable that hook and allow moving icons past the first page when using the paging method.
+- (id)insertIcon:(SBIcon *)icon intoListView:(SBIconListView *)view iconIndex:(NSUInteger)index moveNow:(BOOL)now pop:(BOOL)pop {
+    id i = nil;
+
+    if (IFIconListIsValid(view)) {
+        IFFlag(IFFlagDisableVisibleIcons) {
+            i = %orig;
+        }
+    } else {
+        i = %orig;
+    }
+
+    return i;
 }
 
 %end
