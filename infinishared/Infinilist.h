@@ -500,18 +500,32 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
 
 /* View Hierarchy {{{ */
 
+static void IFIconListInitialize(SBIconListView *listView) {
+    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:[listView frame]];
+    [scrollView setDelegate:(id<UIScrollViewDelegate>) listView];
+    [scrollView setDelaysContentTouches:NO];
+
+    IFListsRegister(listView, scrollView);
+    [listView addSubview:scrollView];
+
+    IFIconListSizingUpdateIconList(listView);
+    IFPreferencesApplyToList(listView);
+}
+
 - (id)initWithFrame:(CGRect)frame {
     if ((self = %orig)) {
         if (IFIconListIsValid(self)) {
-            UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:frame];
-            [scrollView setDelegate:(id<UIScrollViewDelegate>) self];
-            [scrollView setDelaysContentTouches:NO];
+            IFIconListInitialize(self);
+        }
+    }
 
-            IFListsRegister(self, scrollView);
-            [self addSubview:scrollView];
+    return self;
+}
 
-            IFIconListSizingUpdateIconList(self);
-            IFPreferencesApplyToList(self);
+- (id)initWithFrame:(CGRect)frame viewMap:(id)viewMap {
+    if ((self = %orig)) {
+        if (IFIconListIsValid(self)) {
+            IFIconListInitialize(self);
         }
     }
 

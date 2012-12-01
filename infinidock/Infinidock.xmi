@@ -6,7 +6,7 @@
 #define IFConfigurationExpandWhenEditing NO
 
 #define IFPreferencesPagingEnabled @"IFPagingEnabled", NO
-#define IFPreferencesScrollEnabled @"IFScrollEnabled", NO
+#define IFPreferencesScrollEnabled @"IFScrollEnabled", YES
 #define IFPreferencesScrollBounce @"IFScrollBounce", kIFScrollBounceEnabled
 #define IFPreferencesScrollbarStyle @"IFScrollbarStyle", kIFScrollbarStyleNone
 
@@ -31,7 +31,7 @@ static NSUInteger IFVeryDefaultIconColumns() {
 
 #define IFPreferencesIconsPerPage @"IFIconsPerPage", (IFVeryDefaultIconColumns())
 #define IFPreferencesRestorePage @"IFRestoreEnabled", 0
-#define IFPreferencesSnapEnabled @"IFSnapEnabled", NO
+#define IFPreferencesSnapEnabled @"IFSnapEnabled", NO // TODO: implement me!
 
 %group IFInfinidock
 
