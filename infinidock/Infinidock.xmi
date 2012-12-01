@@ -1,4 +1,7 @@
 
+/* Configuration and Preferences {{{ */
+
+#define IFConfigurationTweakIdentifier Infinidock
 #define IFConfigurationListClass SBDockIconListView
 #define IFConfigurationExpandHorizontally YES
 #define IFConfigurationExpandVertically NO
@@ -33,7 +36,11 @@ static NSUInteger IFVeryDefaultIconColumns() {
 #define IFPreferencesRestorePage @"IFRestoreEnabled", 0
 #define IFPreferencesSnapEnabled @"IFSnapEnabled", NO // TODO: implement me!
 
+/* }}} */
+
 %group IFInfinidock
+
+/* Layout {{{ */
 
 %hook IFConfigurationListClass
 
@@ -61,8 +68,15 @@ static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView
             // they will not center themselves right. Fix that.
             return kIFIconLayoutMethodEven;
         } else {
-            // Most cases for non-paged icons.
-            return kIFIconLayoutMethodGrow;
+            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+                // Most cases for non-paged icons.
+                // FIXME: Make this method work on iPad.
+                return kIFIconLayoutMethodGrow;
+            } else {
+                // Growing creates outsided margins with high icon counts
+                // on the iPad, so instead use the even layout method.
+                return kIFIconLayoutMethodEven;
+            }
         }
     }
 }
@@ -78,7 +92,7 @@ static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView
 
 static NSInteger IFFlagDisableVisibleIcons = 0;
 
-- (NSInteger)visibleIconsInDock {
+- (NSUInteger)visibleIconsInDock {
     if (IFIconListIsValid(self) && !IFFlagDisableVisibleIcons) {
         if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
             NSInteger icons = %orig;
@@ -95,10 +109,14 @@ static NSInteger IFFlagDisableVisibleIcons = 0;
 
 - (NSUInteger)iconsInRowForSpacingCalculation {
     if (IFIconListIsValid(self)) {
-        if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
-            NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+            if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
+                NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
-            return IFMaximum(defaultIcons, IFVeryDefaultIconColumns());
+                return IFMaximum(defaultIcons, IFVeryDefaultIconColumns());
+            } else {
+                return %orig;
+            }
         } else {
             return %orig;
         }
@@ -143,7 +161,7 @@ static NSInteger IFFlagDisableVisibleIcons = 0;
 
             CGFloat blankWidth = width - (iconWidth * defaultIcons);
             CGFloat singleBlank = blankWidth / (defaultIcons + 1);
-            return singleBlank;
+            return roundf(singleBlank);
         } else {
             return %orig;
         }
@@ -165,7 +183,75 @@ static NSInteger IFFlagDisableVisibleIcons = 0;
     }
 }
 
+- (void)_updateForOrientation:(UIInterfaceOrientation)orientation duration:(NSTimeInterval)interval {
+    %orig;
+
+    [self layoutIconsNow];
+}
+
 %end
+
+/* }}} */
+
+/* Snap {{{ */
+
+%hook IFConfigurationListClass
+
+%new(v@:@{CGPoint=ff}^{CGPoint=ff})
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(CGPoint *)targetContentOffset {
+    if (IFPreferencesBoolForKey(IFPreferencesSnapEnabled)) {
+        SBIconListView *listView = IFListsListViewForScrollView(scrollView);
+
+        CGPoint contentOffset = [scrollView contentOffset];
+        CGSize contentSize = [scrollView contentSize];
+        CGSize boundsSize = [scrollView bounds].size;
+
+        CGSize iconSize = IFIconDefaultSize();
+        CGFloat iconInset = [listView sideIconInset];
+        CGFloat iconPadding = [listView horizontalIconPadding];
+
+        CGPoint screenOffset = *targetContentOffset;
+        screenOffset.x -= contentOffset.x;
+        screenOffset.y -= contentOffset.y;
+        NSUInteger column = [listView columnAtPoint:screenOffset];
+
+        CGPoint origin = [listView originForIconAtIndex:column];
+        CGPoint offset = CGPointZero;
+
+        // Find the icon offset to move to.
+        if (targetContentOffset->x - origin.x < iconSize.width / 2) {
+            offset.x = origin.x;
+        } else {
+            offset.x = origin.x + iconSize.width + iconPadding;
+        }
+
+        offset.x -= iconInset;
+
+        if (offset.x <= 0) {
+            offset.x = 0;
+        } else if (offset.x + boundsSize.width >= contentSize.width) {
+            offset.x = contentSize.width - boundsSize.width;
+        }
+
+        // Avoid changing the content offset if possible, as it prevents bouncing.
+        if (fabs(offset.x - targetContentOffset->x) > 1.0) {
+            // Work around UIScrollView bug where you cannot return values at the edges.
+            if (offset.x <= 0) {
+                offset.x = 0.1;
+            } else if (offset.x + boundsSize.width >= contentSize.width) {
+                offset.x = contentSize.width - boundsSize.width - 0.1;
+            }
+
+            *targetContentOffset = offset;
+        }
+    }
+}
+
+%end
+
+/* }}} */
+
+/* Fixes {{{ */
 
 %hook SBIconController
 
@@ -187,6 +273,10 @@ static NSInteger IFFlagDisableVisibleIcons = 0;
 
 %end
 
+/* }}} */
+
+/* Restore {{{ */
+
 %hook SBUIController
 
 static void IFRestoreIconLists() {
@@ -200,14 +290,27 @@ static void IFRestoreIconLists() {
             page = (page - 1);
 
             CGSize size = [scrollView bounds].size;
+            CGPoint offset = [scrollView contentOffset];
+            CGSize content = [scrollView contentSize];
 
             if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
-                CGPoint offset = [scrollView contentOffset];
                 offset.x = (size.width * page);
-                [scrollView setContentOffset:offset animated:NO];
             } else {
-                // FIXME: restore to page without paging enabled
+                NSUInteger iconsPerPage = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
+                NSUInteger index = (page * iconsPerPage);
+
+                CGPoint origin = [listView originForIconAtIndex:index];
+                CGFloat side = [listView sideIconInset];
+
+                offset = CGPointMake(origin.x - side, 0);
             }
+
+            // Constrain to the scroll view's size.
+            if (offset.x + size.width > content.width) {
+                offset.x = content.width - size.width;
+            }
+
+            [scrollView setContentOffset:offset animated:NO];
         }
     });
 }
@@ -253,6 +356,8 @@ static void IFRestoreIconLists() {
 }
 
 %end
+
+/* }}} */
 
 %end
 

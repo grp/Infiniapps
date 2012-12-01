@@ -1,5 +1,6 @@
 
 /* Configuration {{{ */
+#define IFConfigurationTweakIdentifier Infinifolders
 #define IFConfigurationListClass SBFolderIconListView
 #define IFConfigurationBottomPadding (IFDeviceIsPad() ? (UIInterfaceOrientationIsLandscape([IFIconControllerSharedInstance() orientation]) ? -8.0f : -13.0f) : 3.0f)
 /* }}} */

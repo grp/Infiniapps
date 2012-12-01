@@ -21,6 +21,13 @@
 #define IFMacroQuote_(x) #x
 #define IFMacroQuote(x) IFMacroQuote_(x)
 
+#define IFMacroConcat_(x, y) x ## y
+#define IFMacroConcat(x, y) IFMacroConcat_(x, y)
+
+#ifndef IFConfigurationTweakIdentifier
+    #error "You must define a IFConfigurationTweakIdentifier."
+#endif
+
 #ifndef IFConfigurationListClass
     #define IFConfigurationListClass SBIconListView
 #endif
@@ -47,23 +54,20 @@
 
 /* Flags {{{ */
 
-#define IFConcat_(x, y) x ## y
-#define IFConcat(x, y) IFConcat_(x, y)
-
 // Custom control structure for managing flags safely.
 // Usage: IFFlag(IFFlagNamedThis) { /* code with flag enabled */ }
 // Do not return out of this structure, or the flag is stuck.
 #define IFFlag_(flag, c) \
     if (1) { \
         flag += 1; \
-        goto IFConcat(body, c); \
+        goto IFMacroConcat(body, c); \
     } else \
         while (1) \
             if (1) { \
                 flag -= 1; \
                 break; \
             } else \
-                IFConcat(body, c):
+                IFMacroConcat(body, c):
 #define IFFlag(flag) IFFlag_(flag, __COUNTER__)
 
 static NSUInteger IFFlagExpandedFrame = 0;
@@ -379,6 +383,9 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
 
 /* Information {{{ */
 
+// Prevent conflicts between multiple users of Infinilist.
+#define IFIconListSizingInformation IFMacroConcat(IFIconListSizingInformation, IFConfigurationTweakIdentifier)
+
 @interface IFIconListSizingInformation : NSObject {
     IFIconListDimensions defaultDimensions;
     CGSize defaultPadding;
@@ -467,14 +474,36 @@ static CGSize IFIconListSizingEffectiveContentSize(SBIconListView *listView) {
 
 static void IFIconListSizingUpdateContentSize(SBIconListView *listView, UIScrollView *scrollView) {
     CGPoint offset = [scrollView contentOffset];
+    CGSize scrollSize = [scrollView bounds].size;
     CGSize oldSize = [scrollView contentSize];
     CGSize newSize = IFIconListSizingEffectiveContentSize(listView);
 
-    // Make sure the content offset is never below the bottom of the scroll view.
-    if (offset.y + [scrollView bounds].size.height > newSize.height) {
-        // But not if the scroll view is only a few rows.
-        if (newSize.height >= [scrollView bounds].size.height) {
-            offset.y = newSize.height - [scrollView bounds].size.height;
+
+    if (IFConfigurationExpandHorizontally) {
+        // Be sure not to have two-dimensional scrolling.
+        if (newSize.height > scrollSize.height) {
+            newSize.height = scrollSize.height;
+        }
+
+        // Make sure the content offset is never outside the scroll view.
+        if (offset.x + scrollSize.width > newSize.width) {
+            // But not if the scroll view is only a few columns.
+            if (newSize.width >= scrollSize.width) {
+                offset.x = newSize.width - scrollSize.width;
+            }
+        }
+    } else if (IFConfigurationExpandVertically) {
+        // Be sure not to have two-dimensional scrolling.
+        if (newSize.width > scrollSize.width) {
+            newSize.width = scrollSize.width;
+        }
+
+        // Make sure the content offset is never outside the scroll view.
+        if (offset.y + scrollSize.height > newSize.height) {
+            // But not if the scroll view is only a few rows.
+            if (newSize.height >= scrollSize.height) {
+                offset.y = newSize.height - scrollSize.height;
+            }
         }
     }
 
@@ -832,7 +861,6 @@ static id grabbedIcon = nil;
     // we don't care about. If it is, we won't have a scroll
     // view for it, and can safely ignore moving the icon.
     if (scrollView != nil) {
-        CGRect r = ret;
         ret.origin.x -= [scrollView contentOffset].x;
         ret.origin.y -= [scrollView contentOffset].y;
     }

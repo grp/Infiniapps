@@ -56,6 +56,7 @@
 + (NSUInteger)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)orientation;
 - (NSUInteger)iconRowsForCurrentOrientation;
 - (NSUInteger)iconColumnsForCurrentOrientation;
+- (NSUInteger)iconsInRowForSpacingCalculation;
 
 - (NSArray *)icons;
 - (SBIconListModel *)model;
@@ -65,6 +66,7 @@
 - (NSUInteger)rowForIcon:(SBIcon *)icon;
 - (SBIcon *)iconAtPoint:(CGPoint)point index:(NSInteger *)index;
 
+- (CGPoint)originForIconAtIndex:(NSUInteger)index;
 - (CGPoint)originForIconAtX:(NSUInteger)x Y:(NSUInteger)y;
 
 - (CGSize)defaultIconSize; // iOS 5.0+
@@ -84,6 +86,8 @@
 @end
 
 @interface SBDockIconListView : SBIconListView
+- (NSUInteger)visibleIconsInDock;
+- (void)_updateForOrientation:(UIInterfaceOrientation)orientation duration:(NSTimeInterval)interval;
 @end
 
 @interface SBIconController : NSObject
