@@ -83,7 +83,9 @@ static NSUInteger IFFlagFolderOpening = 0;
 - (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
     // Let -iconAtPoint: know that it can slide SpringBoard "upwards" if necessary.
     IFFlag(IFFlagFolderOpening) {
-        %orig;
+        IFFlag(IFFlagDefaultDimensions) {
+            %orig;
+        }
     }
 }
 
