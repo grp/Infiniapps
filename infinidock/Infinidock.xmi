@@ -57,18 +57,24 @@ static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView
         return kIFIconLayoutMethodDefault;
     } else {
         NSInteger icons = [[listView icons] count];
-        NSInteger defaultIcons = [IFIconListSizingInformationForIconList(listView) defaultDimensions].columns;
+        NSInteger selectedIcons = [IFIconListSizingInformationForIconList(listView) defaultDimensions].columns;
 
-        if (icons < defaultIcons) {
+        if (icons < selectedIcons) {
             // When we have less than the selected number of icons,
             // we need to center them as with the built-in spacing.
             return kIFIconLayoutMethodDefault;
-        } else if (defaultIcons < IFVeryDefaultIconColumns()) {
+        } else if (selectedIcons < IFVeryDefaultIconColumns()) {
             // If we are showing a small number of icons per page,
             // they will not center themselves right. Fix that.
             return kIFIconLayoutMethodEven;
         } else {
             if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+                if (selectedIcons == 5) {
+                    // On the iPhone, special case 5 icons to use an even method
+                    // as while it doesn't fit in the dock, it looks much better.
+                    return kIFIconLayoutMethodEven;
+                }
+
                 // Most cases for non-paged icons.
                 // FIXME: Make this method work on iPad.
                 return kIFIconLayoutMethodGrow;
@@ -206,23 +212,23 @@ static NSInteger IFFlagDisableVisibleIcons = 0;
         CGSize contentSize = [scrollView contentSize];
         CGSize boundsSize = [scrollView bounds].size;
 
-        CGSize iconSize = IFIconDefaultSize();
         CGFloat iconInset = [listView sideIconInset];
-        CGFloat iconPadding = [listView horizontalIconPadding];
 
         CGPoint screenOffset = *targetContentOffset;
+        screenOffset.x += iconInset;
         screenOffset.x -= contentOffset.x;
         screenOffset.y -= contentOffset.y;
         NSUInteger column = [listView columnAtPoint:screenOffset];
 
         CGPoint origin = [listView originForIconAtIndex:column];
+        CGPoint nextOrigin = [listView originForIconAtIndex:column + 1];
         CGPoint offset = CGPointZero;
 
         // Find the icon offset to move to.
-        if (targetContentOffset->x - origin.x < iconSize.width / 2) {
+        if (fabs(targetContentOffset->x - origin.x) < fabs(targetContentOffset->x - nextOrigin.x)) {
             offset.x = origin.x;
         } else {
-            offset.x = origin.x + iconSize.width + iconPadding;
+            offset.x = nextOrigin.x;
         }
 
         offset.x -= iconInset;
