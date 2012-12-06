@@ -22,7 +22,7 @@
 #define CountlyPaste_(x, y) x##y
 #define CountlyPaste(x, y) CountlyPaste_(x, y)
 
-#define C(name) CountlyPaste(CountlyPrefix, CountlyPaste(Obfuscated, name))
+#define C(name) CountlyPaste(CountlyPrefix, CountlyPaste(O, name))
 
 #define EventQueue 1
 @class C(EventQueue);
