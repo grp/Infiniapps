@@ -6,11 +6,17 @@ export TARGET_LD = xcrun -sdk iphoneos clang++
 export TARGET = iphone:latest:5.0
 export ARCHS = armv7 # pending theos bug: armv7s
 
+COUNTLY_TOKEN = 0109443b27e2bb0a76dbf885923c8dce130564f8
+COUNTLY_NAME = $(shell cat layout/DEBIAN/control | grep Name | cut -d ":" -f 2- | cut -c 2-)
+COUNTLY_VERSION = $(shell cat layout/DEBIAN/control | grep Version | cut -d ":" -f 2- | cut -c 2-)
+COUNTLY_IDENTIFIER = $(shell cat layout/DEBIAN/control | grep Package | cut -d ":" -f 2- | cut -c 2-)
+
 include theos/makefiles/common.mk
 
 TWEAK_NAME = Infiniboard
-Infiniboard_FILES = Infiniboard.xmi
-Infiniboard_FRAMEWORKS = UIKit CoreGraphics QuartzCore
+Infiniboard_FILES = Infiniboard.xmi infinishared/Countly.m
+Infiniboard_FRAMEWORKS = UIKit CoreGraphics QuartzCore CoreTelephony
+Infiniboard_CFLAGS = -DCountlyAppVersion=$(COUNTLY_VERSION) -DCountlyPrefix=$(COUNTLY_NAME) -DCountlyAppIdentifier=$(COUNTLY_IDENTIFIER) -DCountlyAppToken=$(COUNTLY_TOKEN)
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

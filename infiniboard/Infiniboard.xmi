@@ -2,11 +2,11 @@
 #define IFConfigurationTweakIdentifier Infiniboard
 #define IFConfigurationListClass SBIconListView
 
-#import "infinishared/Infinilist.h"
-#import "infinishared/Preferences.h"
-
 #define IFPreferencesRestoreEnabled @"RestoreEnabled", NO
 #define IFPreferencesFastRestoreEnabled @"FastRestoreEnabled", NO
+
+#import "infinishared/Infinilist.h"
+#import "infinishared/Preferences.h"
 
 %group IFInfiniboard
 

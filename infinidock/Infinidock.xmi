@@ -13,6 +13,12 @@
 #define IFPreferencesScrollBounce @"IFScrollBounce", kIFScrollBounceEnabled
 #define IFPreferencesScrollbarStyle @"IFScrollbarStyle", kIFScrollbarStyleNone
 
+#define IFPreferencesIconsPerPage @"IFIconsPerPage", (IFVeryDefaultIconColumns())
+#define IFPreferencesRestorePage @"IFRestoreEnabled", 0
+#define IFPreferencesSnapEnabled @"IFSnapEnabled", NO
+
+static NSUInteger IFVeryDefaultIconColumns();
+
 #import "infinishared/Infinilist.h"
 #import "infinishared/Preferences.h"
 
@@ -31,10 +37,6 @@ static NSUInteger IFVeryDefaultIconColumns() {
 
     return icons;
 }
-
-#define IFPreferencesIconsPerPage @"IFIconsPerPage", (IFVeryDefaultIconColumns())
-#define IFPreferencesRestorePage @"IFRestoreEnabled", 0
-#define IFPreferencesSnapEnabled @"IFSnapEnabled", NO // TODO: implement me!
 
 /* }}} */
 

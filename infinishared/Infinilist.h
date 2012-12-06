@@ -928,5 +928,41 @@ static id grabbedIcon = nil;
 
 /* }}} */
 
+#import "Countly.h"
+
+%hook SBUIController
+
+- (void)finishLaunching {
+    %orig;
+
+    CountlyStartWithTokenHost(CountlySharedInstance, @CountlyQuote(CountlyAppToken), @"http://analytics.chpwn.com");
+
+    NSDictionary *preferences = [NSDictionary dictionaryWithObjectsAndKeys:
+        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesPagingEnabled)] stringValue], @"paging-enabled",
+        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesScrollEnabled)] stringValue], @"scroll-enabled",
+        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesScrollbarStyle)] stringValue], @"scrollbar-style",
+        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesScrollBounce)] stringValue], @"scroll-bounce",
+#ifdef IFPreferencesIconsPerPage
+        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesIconsPerPage)] stringValue], @"icons-per-page",
+#endif
+#ifdef IFPreferencesRestorePage
+        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesRestorePage)] stringValue], @"restore-page",
+#endif
+#ifdef IFPreferencesSnapEnabled
+        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesSnapEnabled)] stringValue], @"snap-enabled",
+#endif
+#ifdef IFPreferencesRestoreEnabled
+        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesRestoreEnabled)] stringValue], @"restore-enabled",
+#endif
+#ifdef IFPreferencesFastRestoreEnabled
+        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesFastRestoreEnabled)] stringValue], @"fast-restore-enabled",
+#endif
+    nil];
+    CountlyRecordEventSegmentationCount(@"preferences", preferences, 1);
+
+}
+
+%end
+
 %end
 
