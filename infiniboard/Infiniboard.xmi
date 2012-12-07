@@ -80,7 +80,7 @@ static NSUInteger IFFlagFolderOpening = 0;
     }
 }
 
-/*- (CGRect)_contentViewRelativeFrameForIcon:(SBIcon *)icon {
+- (CGRect)_contentViewRelativeFrameForIcon:(SBIcon *)icon {
     SBIconListView *listView = IFIconListContainingIcon(icon);
     UIScrollView *scrollView = IFListsScrollViewForListView(listView);
 
@@ -109,7 +109,7 @@ static NSUInteger IFFlagFolderOpening = 0;
             %orig;
         }
     }
-}*/
+}
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     if (IFPreferencesBoolForKey(IFPreferencesFastRestoreEnabled)) {

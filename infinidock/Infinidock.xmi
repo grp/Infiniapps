@@ -65,33 +65,25 @@ static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView
             // When we have less than the selected number of icons,
             // we need to center them as with the built-in spacing.
             return kIFIconLayoutMethodDefault;
-        } else if (selectedIcons < IFVeryDefaultIconColumns()) {
-            // If we are showing a small number of icons per page,
-            // they will not center themselves right. Fix that.
-            return kIFIconLayoutMethodEven;
         } else {
-            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-                if (selectedIcons == 5) {
-                    // On the iPhone, special case 5 icons to use an even method
-                    // as while it doesn't fit in the dock, it looks much better.
-                    return kIFIconLayoutMethodEven;
-                }
-
-                // Most cases for non-paged icons.
-                // FIXME: Make this method work on iPad.
+            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone && selectedIcons == IFVeryDefaultIconColumns()) {
+                // On the iPhone, special case 4 icons to use an grow method
+                // as it looks much more natural and the spacing works out.
                 return kIFIconLayoutMethodGrow;
-            } else {
-                // Growing creates outsided margins with high icon counts
-                // on the iPad, so instead use the even layout method.
-                return kIFIconLayoutMethodEven;
             }
+
+            // Growing creates oversized/undersized margins with
+            // non-standard icon icon counts, and can cause a set
+            // of icons to not fall on exactly one page of screen.
+            // So instead use the even layout method, which does.
+            return kIFIconLayoutMethodEven;
         }
     }
 }
 
 + (NSUInteger)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     if (self == IFConfigurationListClassObject && !IFFlagDefaultIconsPerPage) {
-        NSUInteger icons = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
+            NSUInteger icons = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
         return icons;
     } else {
         return %orig;
@@ -170,6 +162,17 @@ static NSInteger IFFlagDisableVisibleIcons = 0;
             CGFloat blankWidth = width - (iconWidth * defaultIcons);
             CGFloat singleBlank = blankWidth / (defaultIcons + 1);
             return roundf(singleBlank);
+        } else if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
+            NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
+            NSInteger veryDefaultIcons = IFVeryDefaultIconColumns();
+
+            if (defaultIcons > veryDefaultIcons) {
+                // With high icon counts, margins can feel
+                // too big, so shrink them a little bit.
+                return %orig * 0.5f;
+            } else {
+                return %orig;
+            }
         } else {
             return %orig;
         }
