@@ -94,7 +94,7 @@ static int disableMaxFlag = 0;
 
 - (NSUInteger)_folderRowsForFolder:(SBFolder *)folder inOrientation:(UIInterfaceOrientation)orientation {
     NSUInteger computedRows = %orig;
-    NSUInteger defaultRows = _IFSizingDefaultDimensionsForOrientation(orientation).rows;
+    NSUInteger defaultRows = _IFSizingDefaultDimensionsForOrientation(orientation).rows; // FIXME: don't use private function here
 
     return IFMinimum(computedRows, defaultRows);
 }

@@ -14,7 +14,7 @@ COUNTLY_IDENTIFIER = $(shell cat layout/DEBIAN/control | grep Package | cut -d "
 include theos/makefiles/common.mk
 
 TWEAK_NAME = Infiniboard
-Infiniboard_FILES = Infiniboard.xmi infinishared/Countly.m
+Infiniboard_FILES = Infiniboard.xmi ../countly/Countly.m
 Infiniboard_FRAMEWORKS = UIKit CoreGraphics QuartzCore CoreTelephony
 Infiniboard_CFLAGS = -DCountlyAppVersion=$(COUNTLY_VERSION) -DCountlyPrefix=$(COUNTLY_NAME) -DCountlyAppIdentifier=$(COUNTLY_IDENTIFIER) -DCountlyAppToken=$(COUNTLY_TOKEN)
 

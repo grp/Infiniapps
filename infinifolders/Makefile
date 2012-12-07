@@ -13,7 +13,7 @@ COUNTLY_IDENTIFIER = $(shell cat layout/DEBIAN/control | grep Package | cut -d "
 include theos/makefiles/common.mk
 
 TWEAK_NAME = Infinifolders
-Infinifolders_FILES = Infinifolders.xmi infinishared/Countly.m
+Infinifolders_FILES = Infinifolders.xmi ../countly/Countly.m
 Infinifolders_FRAMEWORKS = UIKit CoreGraphics QuartzCore CoreTelephony
 Infinifolders_CFLAGS = -DCountlyAppVersion=$(COUNTLY_VERSION) -DCountlyPrefix=$(COUNTLY_NAME) -DCountlyAppIdentifier=$(COUNTLY_IDENTIFIER) -DCountlyAppToken=$(COUNTLY_TOKEN)
 

@@ -80,15 +80,36 @@ static NSUInteger IFFlagFolderOpening = 0;
     }
 }
 
-- (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated {
+/*- (CGRect)_contentViewRelativeFrameForIcon:(SBIcon *)icon {
+    SBIconListView *listView = IFIconListContainingIcon(icon);
+    UIScrollView *scrollView = IFListsScrollViewForListView(listView);
+
+    if (IFIconListIsValid(listView) && IFFlagFolderOpening && IFPreferencesBoolForKey(IFPreferencesClipsToBounds)) {
+        SBIconView *iconView = IFIconViewForIcon(icon);
+        CGRect iconRect = [iconView frame];
+
+        CGRect scrollVisibleFrame = [scrollView frame];
+        scrollVisibleFrame.origin = [scrollView contentOffset];
+
+        if (CGRectIntersectsRect(iconRect, scrollVisibleFrame)) {
+            return %orig;
+        } else {
+            CGRect frame = %orig;
+            return CGRectMake(-1000, -1000, frame.size.width, frame.size.height);
+        }
+    } else {
+        return %orig;
+    }
+}
+
+- (void)openFolder:(SBFolder *)folder animated:(BOOL)animated fromSwitcher:(BOOL)fromSwitcher {
     // Let -iconAtPoint: know that it can slide SpringBoard "upwards" if necessary.
     IFFlag(IFFlagFolderOpening) {
         IFFlag(IFFlagDefaultDimensions) {
             %orig;
         }
     }
-}
-
+}*/
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     if (IFPreferencesBoolForKey(IFPreferencesFastRestoreEnabled)) {

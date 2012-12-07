@@ -407,6 +407,10 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
 @synthesize defaultInsets;
 @synthesize contentDimensions;
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<IFIconListSizingInformation:%p defaultDimensions = {%d, %d} defaultPadding = %@ defaultInsets = %@ contentDimensions = {%d, %d}>", self, defaultDimensions.rows, defaultDimensions.columns, NSStringFromCGSize(defaultPadding), NSStringFromUIEdgeInsets(defaultInsets), contentDimensions.rows, contentDimensions.columns];
+}
+
 @end
 
 static NSMutableDictionary *IFIconListSizingStore = nil;
@@ -546,7 +550,8 @@ static void IFIconListInitialize(SBIconListView *listView) {
 
 - (id)initWithFrame:(CGRect)frame {
     if ((self = %orig)) {
-        if (IFIconListIsValid(self)) {
+        // Avoid hooking a sub-initializer when we hook the base initializer, but otherwise do hook it.
+        if (IFIconListIsValid(self) && ![self respondsToSelector:@selector(initWithFrame:viewMap:)]) {
             IFIconListInitialize(self);
         }
     }
@@ -928,7 +933,7 @@ static id grabbedIcon = nil;
 
 /* }}} */
 
-#import "Countly.h"
+#import "../countly/Countly.h"
 
 %hook SBUIController
 

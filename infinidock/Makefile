@@ -13,7 +13,7 @@ COUNTLY_IDENTIFIER = $(shell cat layout/DEBIAN/control | grep Package | cut -d "
 include theos/makefiles/common.mk
 
 TWEAK_NAME = Infinidock
-Infinidock_FILES = Infinidock.xmi infinishared/Countly.m
+Infinidock_FILES = Infinidock.xmi ../countly/Countly.m
 Infinidock_FRAMEWORKS = UIKit CoreGraphics QuartzCore CoreTelephony
 Infinidock_CFLAGS = -DCountlyAppVersion=$(COUNTLY_VERSION) -DCountlyPrefix=$(COUNTLY_NAME) -DCountlyAppIdentifier=$(COUNTLY_IDENTIFIER) -DCountlyAppToken=$(COUNTLY_TOKEN)
 
