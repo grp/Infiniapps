@@ -38,6 +38,10 @@
     #define IFConfigurationExpandWhenEditing YES
 #endif
 
+#ifndef IFConfigurationFullPages
+    #define IFConfigurationFullPages NO
+#endif
+
 #ifndef IFConfigurationExpandHorizontally
     #define IFConfigurationExpandHorizontally NO
 #endif
@@ -455,7 +459,7 @@ static CGSize IFIconListSizingEffectiveContentSize(SBIconListView *listView) {
     IFIconListDimensions effectiveDimensions = [info contentDimensions];
     CGSize contentSize = CGSizeZero;
 
-    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || IFConfigurationFullPages) {
         IFIconListDimensions defaultDimensions = [info defaultDimensions];
         CGSize size = [listView frame].size;
 

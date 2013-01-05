@@ -1,6 +1,7 @@
 
 #define IFConfigurationTweakIdentifier Infiniboard
 #define IFConfigurationListClass SBIconListView
+#define IFConfigurationFullPages (dlopen("/Library/MobileSubstrate/DynamicLibraries/Iconoclasm.dylib", RTLD_LAZY) != NULL)
 
 #define IFPreferencesRestoreEnabled @"RestoreEnabled", NO
 #define IFPreferencesFastRestoreEnabled @"FastRestoreEnabled", NO

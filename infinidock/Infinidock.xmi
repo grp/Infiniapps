@@ -16,6 +16,7 @@
 #define IFPreferencesIconsPerPage @"IFIconsPerPage", (IFVeryDefaultIconColumns())
 #define IFPreferencesRestorePage @"IFRestoreEnabled", 0
 #define IFPreferencesSnapEnabled @"IFSnapEnabled", NO
+#define IFPreferencesClipsToBounds @"IFClipsToBounds", NO
 
 static NSUInteger IFVeryDefaultIconColumns();
 
