@@ -250,8 +250,35 @@ static void IFPreferencesApplyToList(SBIconListView *listView) {
 
     [scrollView setScrollEnabled:scroll];
     [scrollView setPagingEnabled:page];
-    [scrollView setClipsToBounds:clips];
-    [listView setClipsToBounds:clips];
+    [scrollView setClipsToBounds:NO];
+    [listView setClipsToBounds:NO];
+
+    if (clips) {
+        CGFloat maskGradientHeight = 5.0f;
+        CGFloat statusBarHeight = [[objc_getClass("SpringBoard") sharedApplication] statusBarFrame].size.height;
+
+        CGRect maskFrame = [listView bounds];
+        maskFrame.origin.y -= statusBarHeight;
+        maskFrame.size.height += statusBarHeight;
+        maskFrame.size.height += maskGradientHeight;
+
+        CAGradientLayer *maskLayer = [[CAGradientLayer alloc] init];
+        [maskLayer setFrame:maskFrame];
+        [maskLayer setShouldRasterize:YES];
+        [maskLayer setColors:[NSArray arrayWithObjects:
+            (id) [[UIColor whiteColor] CGColor],
+            (id) [[UIColor clearColor] CGColor],
+        nil]];
+        [maskLayer setStartPoint:CGPointMake(0.5f, (maskFrame.size.height - maskGradientHeight) / maskFrame.size.height)];
+        [maskLayer setEndPoint:CGPointMake(0.5f, 1.0f)];
+
+        CALayer *listLayer = [listView layer];
+        [listLayer setMask:maskLayer];
+        [maskLayer release];
+    } else {
+        CALayer *listLayer = [listView layer];
+        [listLayer setMask:nil];
+    }
 
     if (bounce == kIFScrollBounceExtra) {
         NSUInteger idx = 0;
