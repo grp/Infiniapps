@@ -372,7 +372,7 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
         dimensions = _IFSizingDefaultDimensionsForOrientation(orientation);
     }
 
-    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || IFConfigurationFullPages) {
         IFIconListDimensions defaultDimensions = _IFSizingDefaultDimensions(listView);
 
         // This is ugly, but we need to round up here.
