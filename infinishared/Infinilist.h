@@ -590,13 +590,15 @@ static void IFIconListInitialize(SBIconListView *listView) {
     if (IFIconListIsValid(self)) {
         UIScrollView *scrollView = IFListsScrollViewForListView(self);
 
-        NSUInteger page = 0;
+        NSUInteger pagex = 0;
+        NSUInteger pagey = 0;
 
         if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
             CGPoint offset = [scrollView contentOffset];
             CGRect bounds = [self bounds];
 
-            page = (offset.y / bounds.size.height);
+            pagex = (offset.x / bounds.size.width);
+            pagey = (offset.y / bounds.size.height);
         }
 
         %orig;
@@ -604,11 +606,14 @@ static void IFIconListInitialize(SBIconListView *listView) {
         [scrollView setFrame:[self bounds]];
         IFIconListSizingUpdateIconList(self);
 
+        [self layoutIconsNow];
+
         if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
             CGPoint offset = [scrollView contentOffset];
             CGRect bounds = [self bounds];
 
-            offset.y = (page * bounds.size.height);
+            offset.x = (pagex * bounds.size.width);
+            offset.y = (pagey * bounds.size.height);
             [scrollView setContentOffset:offset animated:NO];
         }
     } else {
@@ -936,42 +941,6 @@ static id grabbedIcon = nil;
 %end
 
 /* }}} */
-
-#import "../countly/Countly.h"
-
-%hook SBUIController
-
-- (void)finishLaunching {
-    %orig;
-
-    CountlyStartWithTokenHost(CountlySharedInstance, @CountlyQuote(CountlyAppToken), @"http://analytics.chpwn.com");
-
-    NSDictionary *preferences = [NSDictionary dictionaryWithObjectsAndKeys:
-        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesPagingEnabled)] stringValue], @"paging-enabled",
-        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesScrollEnabled)] stringValue], @"scroll-enabled",
-        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesScrollbarStyle)] stringValue], @"scrollbar-style",
-        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesScrollBounce)] stringValue], @"scroll-bounce",
-#ifdef IFPreferencesIconsPerPage
-        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesIconsPerPage)] stringValue], @"icons-per-page",
-#endif
-#ifdef IFPreferencesRestorePage
-        [[NSNumber numberWithInt:IFPreferencesIntForKey(IFPreferencesRestorePage)] stringValue], @"restore-page",
-#endif
-#ifdef IFPreferencesSnapEnabled
-        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesSnapEnabled)] stringValue], @"snap-enabled",
-#endif
-#ifdef IFPreferencesRestoreEnabled
-        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesRestoreEnabled)] stringValue], @"restore-enabled",
-#endif
-#ifdef IFPreferencesFastRestoreEnabled
-        [[NSNumber numberWithBool:IFPreferencesBoolForKey(IFPreferencesFastRestoreEnabled)] stringValue], @"fast-restore-enabled",
-#endif
-    nil];
-    CountlyRecordEventSegmentationCount(@"preferences", preferences, 1);
-
-}
-
-%end
 
 %end
 

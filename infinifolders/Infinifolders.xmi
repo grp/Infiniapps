@@ -111,6 +111,7 @@ __attribute__((constructor)) static void infinifolders_init() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     dlopen("/Library/MobileSubstrate/DynamicLibraries/_iPhoneRotator.dylib", RTLD_LAZY);
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/moreicons.dylib", RTLD_LAZY);
 
     IFPreferencesInitialize(@"com.chpwn.infinifolders", IFPreferencesApply);
 
