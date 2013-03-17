@@ -7,6 +7,9 @@
 @end
 
 @interface SBIcon : NSObject
+- (BOOL)isPlaceholder; // iOS 6.0+
+- (BOOL)isDestinationHole; // iOS 5.x
+- (BOOL)isNullIcon; // iOS 5.x
 @end
 
 @class SBFolder;

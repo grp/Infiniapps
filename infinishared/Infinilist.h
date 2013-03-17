@@ -103,9 +103,24 @@ __attribute__((unused)) static BOOL IFIconListIsValid(SBIconListView *listView) 
 }
 
 __attribute__((unused)) static NSUInteger IFIconListLastIconIndex(SBIconListView *listView) {
-    SBIcon *icon = [[listView icons] lastObject];
+    NSArray *icons = [listView icons];
+    SBIcon *lastIcon = nil;
+
+    for (SBIcon *icon in [icons reverseObjectEnumerator]) {
+        if ([icon respondsToSelector:@selector(isPlaceholder)] && ![icon isPlaceholder]) {
+            lastIcon = icon;
+            break;
+        } else if ([icon respondsToSelector:@selector(isNullIcon)] && ![icon isNullIcon]) {
+            lastIcon = icon;
+            break;
+        } else if ([icon respondsToSelector:@selector(isDestinationHole)] && ![icon isDestinationHole]) {
+            lastIcon = icon;
+            break;
+        }
+    }
+
     SBIconListModel *model = [listView model];
-    return [model indexForIcon:icon];
+    return [model indexForIcon:lastIcon];
 }
 
 __attribute__((unused)) static UIInterfaceOrientation IFIconListOrientation(SBIconListView *listView) {
