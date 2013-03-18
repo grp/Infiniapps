@@ -5,9 +5,9 @@ Package: com.chpwn.infinifolders
 Section: Tweaks
 Pre-Depends: firmware (>= 5.0)
 Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport
-Version: 2.0.3
+Version: 2.0.4
 Architecture: iphoneos-arm
-Description: Scroll your folders and break the 12 icon barrier!
+Description: Scroll your folders: break the icon barrier!
 Depiction: http://chpwn.com/cydia/infinifolders.html
 Homepage: http://chpwn.com/cydia/infinifolders.html
 Icon: file:///Library/PreferenceLoader/Preferences/Infinifolders.png

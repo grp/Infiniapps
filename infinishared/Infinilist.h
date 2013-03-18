@@ -387,13 +387,17 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
         dimensions = _IFSizingDefaultDimensionsForOrientation(orientation);
     }
 
-    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || IFConfigurationFullPages) {
-        IFIconListDimensions defaultDimensions = _IFSizingDefaultDimensions(listView);
+    IFIconListDimensions defaultDimensions = _IFSizingDefaultDimensions(listView);
 
+    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || IFConfigurationFullPages) {
         // This is ugly, but we need to round up here.
         dimensions.rows = ceilf((float) dimensions.rows / (float) defaultDimensions.rows) * defaultDimensions.rows;
         dimensions.columns = ceilf((float) dimensions.columns / (float) defaultDimensions.columns) * defaultDimensions.columns;
     }
+
+    // Make sure we have at least the default number of icons.
+    dimensions.rows = (dimensions.rows > defaultDimensions.rows) ? dimensions.rows : defaultDimensions.rows;
+    dimensions.columns = (dimensions.columns > defaultDimensions.columns) ? dimensions.columns : defaultDimensions.columns;
 
     return dimensions;
 }
