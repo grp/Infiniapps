@@ -84,7 +84,7 @@ static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView
 
 + (NSUInteger)iconColumnsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     if (self == IFConfigurationListClassObject && !IFFlagDefaultIconsPerPage) {
-            NSUInteger icons = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
+        NSUInteger icons = IFPreferencesIntForKey(IFPreferencesIconsPerPage);
         return icons;
     } else {
         return %orig;
@@ -93,19 +93,34 @@ static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView
 
 static NSInteger IFFlagDisableVisibleIcons = 0;
 
-- (NSUInteger)visibleIconsInDock {
+static NSUInteger IFDockIconListVisibleIconsCount(SBDockIconListView *self, NSUInteger orig) {
     if (IFIconListIsValid(self) && !IFFlagDisableVisibleIcons) {
         if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
-            NSInteger icons = %orig;
+            NSInteger icons = orig;
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
             return IFMinimum(icons, defaultIcons);
         } else {
-            return %orig;
+            return orig;
         }
     } else {
-        return %orig;
+        return orig;
     }
+}
+
+- (NSArray *)visibleIcons {
+    NSArray *visibleIcons = %orig;
+
+    if (![self respondsToSelector:@selector(visibleIconsInDock)]) {
+        NSUInteger count = IFDockIconListVisibleIconsCount(self, [visibleIcons count]);
+        return [visibleIcons subarrayWithRange:NSMakeRange(0, count)];
+    } else {
+        return visibleIcons;
+    }
+}
+
+- (NSUInteger)visibleIconsInDock {
+    return IFDockIconListVisibleIconsCount(self, %orig);
 }
 
 - (NSUInteger)iconsInRowForSpacingCalculation {
@@ -258,6 +273,27 @@ static NSInteger IFFlagDisableVisibleIcons = 0;
 /* }}} */
 
 /* Fixes {{{ */
+
+%hook SBIconListView
+
+// This method checks -visibleIcons and won't affect any past the end. (On iOS 7+, we hook that instead of -visibleIconsInDock.)
+- (void)updateEditingStateAnimated:(BOOL)animated {
+    IFFlag(IFFlagDisableVisibleIcons) {
+        %orig;
+    }
+}
+
+%end
+
+%hook SBIconZoomAnimator
+
+- (void)prepare {
+    IFFlag(IFFlagDisableVisibleIcons) {
+        %orig;
+    }
+}
+
+%end
 
 %hook SBIconController
 

@@ -1,6 +1,11 @@
 
 #import <UIKit/UIKit.h>
 
+typedef struct SBIconCoordinate {
+	NSInteger row;
+	NSInteger col;
+} SBIconCoordinate;
+
 @interface ISIconSupport : NSObject
 + (id)sharedInstance;
 - (void)addExtension:(NSString *)name;
@@ -69,8 +74,9 @@
 - (NSUInteger)rowForIcon:(SBIcon *)icon;
 - (SBIcon *)iconAtPoint:(CGPoint)point index:(NSInteger *)index;
 
+- (CGPoint)originForIconAtCoordinate:(SBIconCoordinate)coordinate; // iOS 7.0+
+- (CGPoint)originForIconAtX:(NSUInteger)x Y:(NSUInteger)y; // iOS 5.x and 6.x
 - (CGPoint)originForIconAtIndex:(NSUInteger)index;
-- (CGPoint)originForIconAtX:(NSUInteger)x Y:(NSUInteger)y;
 
 - (CGSize)defaultIconSize; // iOS 5.0+
 - (CGFloat)topIconInset;
@@ -78,6 +84,8 @@
 - (CGFloat)sideIconInset;
 - (CGFloat)verticalIconPadding;
 - (CGFloat)horizontalIconPadding;
+
+- (void)updateEditingStateAnimated:(BOOL)animated; // iOS 7.0+
 
 - (void)setOrientation:(UIInterfaceOrientation)orientation;
 - (void)cleanupAfterRotation;
@@ -89,7 +97,9 @@
 @end
 
 @interface SBDockIconListView : SBIconListView
-- (NSUInteger)visibleIconsInDock;
+- (NSArray *)visibleIcons;
+- (NSUInteger)visibleIconsInDock; // iOS 5.x and 6.x
+
 - (void)_updateForOrientation:(UIInterfaceOrientation)orientation duration:(NSTimeInterval)interval;
 @end
 
@@ -102,7 +112,10 @@
 - (void)setIsEditing:(BOOL)isEditing;
 
 - (SBIconModel *)model; // iOS 6.0+
-- (SBDockIconListView *)dock;
+
+- (SBDockIconListView *)dockListView; // iOS 7.0+
+- (SBDockIconListView *)dock; // iOS 5.x and 6.x
+
 - (SBIconListView *)currentRootIconList;
 - (SBIconListView *)rootIconListAtIndex:(NSInteger)index;
 - (SBFolderIconListView *)currentFolderIconList;
@@ -115,10 +128,23 @@
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(SBIconListView *)listView;
 
 - (SBFolder *)openFolder;
-- (void)setOpenFolder:(SBFolder *)folder;
-- (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated;
-- (void)_openCloseFolderAnimationEnded:(id)ended finished:(id)finished context:(void *)context;
+
+- (void)openFolder:(SBFolder *)folder animated:(BOOL)animated; // iOS 7.0+
+- (void)setOpenFolder:(SBFolder *)folder; // iOS 5.x and 6.x
+
+- (void)_animateFolder:(SBFolder *)folder open:(BOOL)open animated:(BOOL)animated; // iOS 7.0+
+- (void)_slideFolderOpen:(BOOL)open animated:(BOOL)animated; // iOS 5.x and 6.x
+
+- (void)_folderDidFinishOpenClose:(BOOL)_folder animated:(BOOL)animated; // iOS 7.0+
+- (void)_openCloseFolderAnimationEnded:(id)ended finished:(id)finished context:(void *)context; // iOS 5.x and 6.x
+
 - (NSUInteger)_folderRowsForFolder:(SBFolder *)folder inOrientation:(UIInterfaceOrientation)orientation;
+@end
+
+@interface SBIconZoomAnimator : NSObject // iOS 7.0+
+
+- (void)prepare; // iOS 7.0+
+
 @end
 
 typedef NSUInteger SBNotchInfoDirection;

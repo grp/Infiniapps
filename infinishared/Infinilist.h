@@ -146,7 +146,11 @@ __attribute__((unused)) static SBIconListView *IFIconListContainingIcon(SBIcon *
     SBIconListModel *listModel = [rootFolder listContainingIcon:icon];
 
     if ([listModel isKindOfClass:NSClassFromString(@"SBDockIconListModel")]) {
-        return [iconController dock];
+        if ([iconController respondsToSelector:@selector(dockListView)]) {
+            return [iconController dockListView];
+        } else {
+            return [iconController dock];
+        }
     } else {
         NSUInteger index = [rootFolder indexOfList:listModel];
         return [iconController rootIconListAtIndex:index];
@@ -773,30 +777,47 @@ static void IFIconListInitialize(SBIconListView *listView) {
 
 /* Positioning {{{ */
 
+static CGPoint IFIconListOriginForIconAtXY(SBIconListView *self, NSUInteger x, NSUInteger y, CGPoint (^orig)(NSUInteger, NSUInteger)) {
+    CGPoint origin = CGPointZero;
+
+    IFFlag(IFFlagExpandedFrame) {
+        UIScrollView *scrollView = IFListsScrollViewForListView(self);
+
+        if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
+            IFIconListDimensions dimensions = IFSizingDefaultDimensionsForIconList(self);
+
+            NSUInteger px = (x / dimensions.columns), py = (y / dimensions.rows);
+            NSUInteger ix = (x % dimensions.columns), iy = (y % dimensions.rows);
+
+            origin = orig(ix, iy);
+
+            CGSize size = [scrollView frame].size;
+            origin.x += (size.width) * px;
+            origin.y += (size.height) * py;
+        } else {
+            origin = orig(x, y);
+        }
+    }
+
+    return origin;
+}
+
+- (CGPoint)originForIconAtCoordinate:(SBIconCoordinate)coordinate {
+    if (IFIconListIsValid(self)) {
+        return IFIconListOriginForIconAtXY(self, coordinate.col - 1, coordinate.row - 1, ^(NSUInteger x, NSUInteger y) {
+            SBIconCoordinate innerCoordinate = { .row = y + 1, .col = x + 1 };
+            return %orig(innerCoordinate);
+        });
+    } else {
+        return %orig;
+    }
+}
+
 - (CGPoint)originForIconAtX:(NSUInteger)x Y:(NSUInteger)y {
     if (IFIconListIsValid(self)) {
-        CGPoint origin = CGPointZero;
-
-        IFFlag(IFFlagExpandedFrame) {
-            UIScrollView *scrollView = IFListsScrollViewForListView(self);
-
-            if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
-                IFIconListDimensions dimensions = IFSizingDefaultDimensionsForIconList(self);
-
-                NSUInteger px = (x / dimensions.columns), py = (y / dimensions.rows);
-                NSUInteger ix = (x % dimensions.columns), iy = (y % dimensions.rows);
-
-                origin = %orig(ix, iy);
-
-                CGSize size = [scrollView frame].size;
-                origin.x += (size.width) * px;
-                origin.y += (size.height) * py;
-            } else {
-                origin = %orig;
-            }
-        }
-
-        return origin;
+        return IFIconListOriginForIconAtXY(self, x, y, ^(NSUInteger x, NSUInteger y) {
+            return %orig(x, y);
+        });
     } else {
         return %orig;
     }
