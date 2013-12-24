@@ -393,7 +393,7 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
 
     IFIconListDimensions defaultDimensions = _IFSizingDefaultDimensions(listView);
 
-    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || IFConfigurationFullPages) {
+    if (IFConfigurationFullPages || IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
         // This is ugly, but we need to round up here.
         dimensions.rows = ceilf((float) dimensions.rows / (float) defaultDimensions.rows) * defaultDimensions.rows;
         dimensions.columns = ceilf((float) dimensions.columns / (float) defaultDimensions.columns) * defaultDimensions.columns;
@@ -435,7 +435,7 @@ static IFIconListDimensions IFSizingContentDimensions(SBIconListView *listView) 
 @synthesize contentDimensions;
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<IFIconListSizingInformation:%p defaultDimensions = {%d, %d} defaultPadding = %@ defaultInsets = %@ contentDimensions = {%d, %d}>", self, defaultDimensions.rows, defaultDimensions.columns, NSStringFromCGSize(defaultPadding), NSStringFromUIEdgeInsets(defaultInsets), contentDimensions.rows, contentDimensions.columns];
+    return [NSString stringWithFormat:@"<IFIconListSizingInformation:%p defaultDimensions = {%ld, %ld} defaultPadding = %@ defaultInsets = %@ contentDimensions = {%ld, %ld}>", self, (unsigned long)defaultDimensions.rows, (unsigned long)defaultDimensions.columns, NSStringFromCGSize(defaultPadding), NSStringFromUIEdgeInsets(defaultInsets), (unsigned long)contentDimensions.rows, (unsigned long)contentDimensions.columns];
 }
 
 @end
@@ -482,7 +482,7 @@ static CGSize IFIconListSizingEffectiveContentSize(SBIconListView *listView) {
     IFIconListDimensions effectiveDimensions = [info contentDimensions];
     CGSize contentSize = CGSizeZero;
 
-    if (IFPreferencesBoolForKey(IFPreferencesPagingEnabled) || IFConfigurationFullPages) {
+    if (IFConfigurationFullPages || IFPreferencesBoolForKey(IFPreferencesPagingEnabled)) {
         IFIconListDimensions defaultDimensions = [info defaultDimensions];
         CGSize size = [listView frame].size;
 
