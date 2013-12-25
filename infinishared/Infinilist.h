@@ -32,7 +32,9 @@
     #define IFConfigurationListClass SBIconListView
 #endif
 
-#define IFConfigurationListClassObject NSClassFromString(@IFMacroQuote(IFConfigurationListClass))
+#ifndef IFConfigurationListClassObject
+    #define IFConfigurationListClassObject NSClassFromString(@IFMacroQuote(IFConfigurationListClass))
+#endif
 
 #ifndef IFConfigurationExpandWhenEditing
     #define IFConfigurationExpandWhenEditing YES
@@ -761,7 +763,7 @@ static void IFIconListInitialize(SBIconListView *listView) {
 
 - (CGRect)bounds {
     if (IFIconListIsValid(self)) {
-        if (IFFlagExpandedFrame) {
+        if (kCFCoreFoundationVersionNumber < 800.0 && IFFlagExpandedFrame) {
             CGRect bounds = %orig;
             bounds.size = IFIconListSizingEffectiveContentSize(self);
             return bounds;

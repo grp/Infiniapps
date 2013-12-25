@@ -1,6 +1,7 @@
 
 #define IFConfigurationTweakIdentifier Infiniboard
 #define IFConfigurationListClass SBIconListView
+#define IFConfigurationListClassObject (NSClassFromString(@"SBRootIconListView") ?: NSClassFromString(@"SBIconListView"))
 #define IFConfigurationFullPages (dlopen("/Library/MobileSubstrate/DynamicLibraries/Iconoclasm.dylib", RTLD_LAZY) != NULL)
 
 #define IFPreferencesRestoreEnabled @"RestoreEnabled", NO

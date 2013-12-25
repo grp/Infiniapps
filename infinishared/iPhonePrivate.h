@@ -93,6 +93,9 @@ typedef struct SBIconCoordinate {
 - (void)layoutIconsNow;
 @end
 
+@interface SBRootIconListView : SBIconListView
+@end
+
 @interface SBFolderIconListView : SBIconListView
 @end
 
