@@ -1,14 +1,26 @@
 
+/* Configuration {{{ */
+
 #define IFConfigurationTweakIdentifier Infiniboard
 #define IFConfigurationListClass SBIconListView
 #define IFConfigurationListClassObject (NSClassFromString(@"SBRootIconListView") ?: NSClassFromString(@"SBIconListView"))
+#define IFConfigurationScrollViewClass IFInfiniboardScrollView
 #define IFConfigurationFullPages (dlopen("/Library/MobileSubstrate/DynamicLibraries/Iconoclasm.dylib", RTLD_LAZY) != NULL)
 
 #define IFPreferencesRestoreEnabled @"RestoreEnabled", NO
 #define IFPreferencesFastRestoreEnabled @"FastRestoreEnabled", NO
 
+#import <UIKit/UIKit.h>
+
+@interface IFInfiniboardScrollView : UIScrollView
+@end
+
+/* }}} */
+
 #import "infinishared/Infinilist.h"
 #import "infinishared/Preferences.h"
+
+/* Fixes and Restore Implementation {{{ */
 
 %group IFInfiniboard
 
@@ -179,6 +191,32 @@ static NSUInteger IFFlagFolderOpening = 0;
 %end
 
 %end
+
+/* }}} */
+
+/* Custom Scroll View {{{ */
+
+@implementation IFInfiniboardScrollView
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    // Allow accessing Spotlight when scrolled to the top on iOS 7.0+.
+    if (NSClassFromString(@"SBSearchScrollView") != nil) {
+        if (gestureRecognizer == [self panGestureRecognizer]) {
+            CGPoint offset = [self contentOffset];
+            CGPoint velocity = [[self panGestureRecognizer] velocityInView:self];
+
+            if (offset.y <= 0.0 && velocity.y > 0.0) {
+                return NO;
+            }
+        }
+    }
+
+    return [super gestureRecognizerShouldBegin:gestureRecognizer];
+}
+
+@end
+
+/* }}} */
 
 /* Constructor {{{ */
 

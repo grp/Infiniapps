@@ -150,6 +150,9 @@ typedef struct SBIconCoordinate {
 
 @end
 
+@interface SBSearchScrollView : UIScrollView // iOS 7.0+
+@end
+
 typedef NSUInteger SBNotchInfoDirection;
 typedef struct {
     SBNotchInfoDirection direction;

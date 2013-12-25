@@ -36,6 +36,10 @@
     #define IFConfigurationListClassObject NSClassFromString(@IFMacroQuote(IFConfigurationListClass))
 #endif
 
+#ifndef IFConfigurationScrollViewClass
+    #define IFConfigurationScrollViewClass UIScrollView
+#endif
+
 #ifndef IFConfigurationExpandWhenEditing
     #define IFConfigurationExpandWhenEditing YES
 #endif
@@ -566,7 +570,7 @@ static void IFIconListSizingUpdateIconList(SBIconListView *listView) {
 /* View Hierarchy {{{ */
 
 static void IFIconListInitialize(SBIconListView *listView) {
-    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:[listView frame]];
+    UIScrollView *scrollView = [[IFConfigurationScrollViewClass alloc] initWithFrame:[listView frame]];
     [scrollView setDelegate:(id<UIScrollViewDelegate>) listView];
     [scrollView setDelaysContentTouches:NO];
 
