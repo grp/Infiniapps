@@ -763,6 +763,7 @@ static void IFIconListInitialize(SBIconListView *listView) {
 
 - (CGRect)bounds {
     if (IFIconListIsValid(self)) {
+        // This check breaks icon positions on iOS 7.0+, but is needed on iOS 5.x and 6.x.
         if (kCFCoreFoundationVersionNumber < 800.0 && IFFlagExpandedFrame) {
             CGRect bounds = %orig;
             bounds.size = IFIconListSizingEffectiveContentSize(self);
