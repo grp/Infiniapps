@@ -125,6 +125,22 @@ static NSUInteger IFDockIconListVisibleIconsCount(SBDockIconListView *self, NSUI
     return IFDockIconListVisibleIconsCount(self, %orig);
 }
 
+// On iOS 7, the background of folder icons is derived from their position over the wallpaper.
+// That works fine for icons on the first page, but after that, they're not on the wallpaper,
+// so the icons turn black. To prevent that, we always return the center from the first icons.
+- (CGPoint)_wallpaperRelativeIconCenterForIconView:(SBIconView *)iconView {
+    SBIcon *icon = [iconView icon];
+    NSInteger index = [[self icons] indexOfObject:icon];
+
+    NSInteger columns = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
+    index = (index % columns);
+
+    icon = [[self icons] objectAtIndex:index];
+    iconView = IFIconViewForIcon(icon);
+
+    return %orig(iconView);
+}
+
 - (NSUInteger)iconsInRowForSpacingCalculation {
     if (IFIconListIsValid(self)) {
         if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone || kCFCoreFoundationVersionNumber >= 800.0f) {

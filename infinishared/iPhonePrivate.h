@@ -52,6 +52,7 @@ typedef struct SBIconCoordinate {
 
 @interface SBIconView : UIView
 + (CGSize)defaultIconSize; // iOS 5.0+
+- (SBIcon *)icon;
 @end
 
 @interface SBIconViewMap : NSObject
@@ -102,6 +103,7 @@ typedef struct SBIconCoordinate {
 @interface SBDockIconListView : SBIconListView
 - (NSArray *)visibleIcons;
 - (NSUInteger)visibleIconsInDock; // iOS 5.x and 6.x
+- (CGPoint)_wallpaperRelativeIconCenterForIconView:(SBIconView *)iconView; // iOS 7.0+
 
 - (void)_updateForOrientation:(UIInterfaceOrientation)orientation duration:(NSTimeInterval)interval;
 @end
