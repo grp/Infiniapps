@@ -8,7 +8,7 @@ Depends: mobilesubstrate, preferenceloader (>= 1.1), com.chpwn.iconsupport
 Conflicts: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree, com.thecyberduck.springboardenhancer
 Replaces: com.saurik.iphone.fid, com.weiphone.setwallpaper3, com.macciti.6icondock, com.imario.supremepreferencesthree, com.thecyberduck.springboardenhancer
 Provides: com.saurik.iphone.fid, com.macciti.6icondock
-Version: 2.0.4
+Version: 2.1
 Architecture: iphoneos-arm
 Description: Scroll your dock with infinite icons!
 Depiction: http://chpwn.com/cydia/infinidock.html
