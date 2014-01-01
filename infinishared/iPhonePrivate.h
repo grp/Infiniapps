@@ -132,6 +132,8 @@ typedef struct SBIconCoordinate {
 - (void)_dropIconIntoOpenFolder:(SBIcon *)icon withInsertionPath:(NSIndexPath *)path; // iOS 6.0+
 - (void)moveIconFromWindow:(SBIcon *)icon toIconList:(SBIconListView *)listView;
 
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView; // iOS 5.x and 6.x
+
 - (SBFolder *)openFolder;
 
 - (void)openFolder:(SBFolder *)folder animated:(BOOL)animated; // iOS 7.0+
@@ -153,6 +155,28 @@ typedef struct SBIconCoordinate {
 @end
 
 @interface SBSearchScrollView : UIScrollView // iOS 7.0+
+@end
+
+@interface SBFolderView : UIView
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView; // iOS 7.0+
+@end
+
+@interface SBRootFolderView : SBFolderView // ??
+@end
+
+@interface SBUIController : NSObject
+- (void)restoreIconList:(BOOL)animated; // ??
+- (void)restoreIconListAnimated:(BOOL)animated; // ??
+- (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)animateWallpaper; // ??
+- (void)restoreIconListAnimated:(BOOL)animated animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher; // ??
+- (void)restoreIconListAnimated:(BOOL)animated delay:(NSTimeInterval)delay; // ??
+- (void)restoreIconListAnimated:(BOOL)animated delay:(NSTimeInterval)delay animateWallpaper:(BOOL)wallpaper keepSwitcher:(BOOL)switcher; // ??
+- (void)restoreIconListAnimatedIfNeeded:(BOOL)needed animateWallpaper:(BOOL)wallpaper; // ??
+- (void)restoreContent; // iOS 7.0+
+- (void)restoreContentAndUnscatterIconsAnimated:(BOOL)animated; // iOS 7.0+
+- (void)restoreContentAndUnscatterIconsAnimated:(BOOL)animated withCompletion:(id)completion; // iOS 7.0+
+- (void)restoreContentUpdatingStatusBar:(BOOL)updateStatusBar; // iOS 7.0+
+- (void)restoreIconListForSuspendGesture;
 @end
 
 typedef NSUInteger SBNotchInfoDirection;

@@ -24,7 +24,7 @@
 
 %group IFInfiniboard
 
-static void IFRestoreIconLists() {
+static void IFRestoreIconLists(void) {
     IFPreferencesApply();
 
     IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
@@ -36,6 +36,14 @@ static void IFRestoreIconLists() {
             [scrollView flashScrollIndicators];
         }
     });
+}
+
+static void IFFastRestoreIconLists(void) {
+    if (IFPreferencesBoolForKey(IFPreferencesFastRestoreEnabled)) {
+        IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
+            [scrollView setContentOffset:CGPointZero animated:NO];
+        });
+    }
 }
 
 static NSUInteger IFFlagFolderOpening = 0;
@@ -135,13 +143,17 @@ static NSUInteger IFFlagFolderOpening = 0;
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    if (IFPreferencesBoolForKey(IFPreferencesFastRestoreEnabled)) {
-        IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
-            [scrollView setContentOffset:CGPointZero animated:NO];
-        });
-    }
-
     %orig;
+    IFFastRestoreIconLists();
+}
+
+%end
+
+%hook SBRootFolderView
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    %orig;
+    IFFastRestoreIconLists();
 }
 
 %end
@@ -179,6 +191,26 @@ static NSUInteger IFFlagFolderOpening = 0;
 }
 
 - (void)restoreIconListAnimatedIfNeeded:(BOOL)needed animateWallpaper:(BOOL)wallpaper {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContent {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContentAndUnscatterIconsAnimated:(BOOL)animated {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContentAndUnscatterIconsAnimated:(BOOL)animated withCompletion:(id)completion {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContentUpdatingStatusBar:(BOOL)updateStatusBar {
     %orig;
     IFRestoreIconLists();
 }

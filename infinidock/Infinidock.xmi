@@ -195,7 +195,7 @@ static NSUInteger IFDockIconListVisibleIconsCount(SBDockIconListView *self, NSUI
 
             CGFloat blankWidth = width - (iconWidth * defaultIcons);
             CGFloat singleBlank = blankWidth / (defaultIcons + 1);
-            return roundf(singleBlank);
+            return singleBlank;
         } else if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
             NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
             NSInteger veryDefaultIcons = IFVeryDefaultIconColumns();
@@ -339,7 +339,7 @@ static NSUInteger IFDockIconListVisibleIconsCount(SBDockIconListView *self, NSUI
 
 %hook SBUIController
 
-static void IFRestoreIconLists() {
+static void IFRestoreIconLists(void) {
     IFPreferencesApply();
 
     IFListsIterateViews(^(SBIconListView *listView, UIScrollView *scrollView) {
@@ -406,6 +406,26 @@ static void IFRestoreIconLists() {
 }
 
 - (void)restoreIconListAnimatedIfNeeded:(BOOL)needed animateWallpaper:(BOOL)wallpaper {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContent {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContentAndUnscatterIconsAnimated:(BOOL)animated {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContentAndUnscatterIconsAnimated:(BOOL)animated withCompletion:(id)completion {
+    %orig;
+    IFRestoreIconLists();
+}
+
+- (void)restoreContentUpdatingStatusBar:(BOOL)updateStatusBar {
     %orig;
     IFRestoreIconLists();
 }
