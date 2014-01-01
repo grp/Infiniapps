@@ -60,6 +60,11 @@
     #define IFConfigurationDynamicColumns NO
 #endif
 
+#ifndef IFConfigurationExpandedDimension
+    // Must be less than sqrt(INT32_MAX).
+    #define IFConfigurationExpandedDimension 10000
+#endif
+
 /* }}} */
 
 /* Flags {{{ */
@@ -358,11 +363,11 @@ static IFIconListDimensions IFSizingMaximumDimensionsForOrientation(UIInterfaceO
     IFIconListDimensions dimensions = _IFSizingDefaultDimensionsForOrientation(orientation);
 
     if (IFConfigurationExpandVertically) {
-        dimensions.rows = NSIntegerMax;
+        dimensions.rows = IFConfigurationExpandedDimension;
     }
 
     if (IFConfigurationExpandHorizontally) {
-        dimensions.columns = NSIntegerMax;
+        dimensions.columns = IFConfigurationExpandedDimension;
     }
 
     return dimensions;
@@ -692,7 +697,7 @@ static void IFIconListInitialize(SBIconListView *listView) {
         if (IFFlagDefaultDimensions) {
             return %orig;
         } else {
-            return NSIntegerMax;
+            return IFConfigurationExpandedDimension * IFConfigurationExpandedDimension;
         }
     } else {
         return %orig;

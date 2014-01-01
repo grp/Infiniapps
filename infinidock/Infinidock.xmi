@@ -67,10 +67,12 @@ static IFIconLayoutMethod IFIconListCurrentLayoutMethod(SBIconListView *listView
             // we need to center them as with the built-in spacing.
             return kIFIconLayoutMethodDefault;
         } else {
-            if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone && selectedIcons == IFVeryDefaultIconColumns()) {
-                // On the iPhone, special case 4 icons to use an grow method
-                // as it looks much more natural and the spacing works out.
-                return kIFIconLayoutMethodGrow;
+            if (kCFCoreFoundationVersionNumber < 800.0f) {
+                if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone && selectedIcons == IFVeryDefaultIconColumns()) {
+                    // On the iPhone, special case 4 icons to use an grow method
+                    // as it looks much more natural and the spacing works out.
+                    return kIFIconLayoutMethodGrow;
+                }
             }
 
             // Growing creates oversized/undersized margins with
@@ -125,7 +127,7 @@ static NSUInteger IFDockIconListVisibleIconsCount(SBDockIconListView *self, NSUI
 
 - (NSUInteger)iconsInRowForSpacingCalculation {
     if (IFIconListIsValid(self)) {
-        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone || kCFCoreFoundationVersionNumber >= 800.0f) {
             if (IFIconListCurrentLayoutMethod(self) == kIFIconLayoutMethodDefault) {
                 NSInteger defaultIcons = [IFIconListSizingInformationForIconList(self) defaultDimensions].columns;
 
