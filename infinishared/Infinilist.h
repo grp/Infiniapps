@@ -128,13 +128,19 @@ __attribute__((unused)) static NSUInteger IFMaximum(NSUInteger x, NSUInteger y) 
     return (x > y ? x : y);
 }
 
-__attribute__((unused)) static SBIconView *IFIconViewForIcon(SBIcon *icon) {
-    Class map = NSClassFromString(@"SBIconViewMap");
-    return [[map homescreenMap] iconViewForIcon:icon];
-}
-
 __attribute__((unused)) static SBIconController *IFIconControllerSharedInstance() {
     return (SBIconController *) [NSClassFromString(@"SBIconController") sharedInstance];
+}
+
+__attribute__((unused)) static SBIconView *IFIconViewForIcon(SBIcon *icon) {
+    SBIconController *iconController = IFIconControllerSharedInstance();
+    if ([iconController respondToSelector:@selector(homescreenIconViewMap)]) {
+        SBIconViewMap *iconViewMap = [iconController homescreenIconViewMap];
+        return [iconViewMap iconViewForIcon:icon];
+    } else {
+        SBIconViewMap *iconViewMap = [NSClassFromString(@"SBIconViewMap") homescreenMap];
+        return [iconViewMap iconViewForIcon:icon];
+    }
 }
 
 __attribute__((unused)) static BOOL IFIconListIsValid(SBIconListView *listView) {

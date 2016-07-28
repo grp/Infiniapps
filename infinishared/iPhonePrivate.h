@@ -139,6 +139,8 @@ typedef struct SBIconCoordinate {
 @interface SBIconController : NSObject
 + (SBIconController *)sharedInstance;
 
+@property (nonatomic, readonly) SBIconViewMap *homescreenIconViewMap; // iOS 9.3+
+
 - (UIInterfaceOrientation)orientation;
 
 - (BOOL)isEditing;
