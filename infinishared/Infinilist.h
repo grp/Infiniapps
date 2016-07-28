@@ -116,6 +116,10 @@
 static NSUInteger IFFlagExpandedFrame = 0;
 static NSUInteger IFFlagDefaultDimensions = 0;
 
+#ifndef kCFCoreFoundationVersionNumber_iOS_9_3
+#define kCFCoreFoundationVersionNumber_iOS_9_3 1280.30
+#endif
+
 /* }}} */
 
 /* Conveniences {{{ */
@@ -129,8 +133,13 @@ __attribute__((unused)) static NSUInteger IFMaximum(NSUInteger x, NSUInteger y) 
 }
 
 __attribute__((unused)) static SBIconView *IFIconViewForIcon(SBIcon *icon) {
-    Class map = NSClassFromString(@"SBIconViewMap");
-    return [[map homescreenMap] iconViewForIcon:icon];
+    if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_9_3) {
+        SBIconViewMap *iconViewMP = [[objc_getClass("SBIconController") sharedInstance] homescreenIconViewMap];
+        return [iconViewMP iconViewForIcon:icon];
+    } else {
+        Class map = NSClassFromString(@"SBIconViewMap");
+        return [[map homescreenMap] iconViewForIcon:icon];
+    }
 }
 
 __attribute__((unused)) static SBIconController *IFIconControllerSharedInstance() {
